@@ -70,19 +70,19 @@ class ExpenseQuery
         $key = $groupBy->recurringKey();
         if (!$key) return $result;
 
-        $target = DateUtil::startOfMonth(DateUtil::resolveMonth($month));
+        $range = DateUtil::monthRange(DateUtil::resolveMonth($month));
 
         $list = ExpenseRecurringAdjustment::query()
             ->whereIn($key, $result->pluck($key)->filter())
             ->where('is_fixed_cost', 0)
-            ->whereDate('start_date', '<=', $target)
-            ->where(function ($q) use ($target) {
+            ->where('start_date', '<=', $range['end'])
+            ->where(function ($q) use ($range) {
                 $q->whereNull('end_date')
-                    ->orWhereDate('end_date', '>=', $target);
+                    ->orWhere('end_date', '>=', $range['start']);
             })
             ->whereRaw(
                 'MOD(TIMESTAMPDIFF(MONTH, start_date, ?), interval_months) = 0',
-                [$target->format('Y-m-01')]
+                [$range['start']->format('Y-m-d')]
             )
             ->get()
             ->groupBy($key);
@@ -107,18 +107,18 @@ class ExpenseQuery
 
     public function totalFixedCost(?string $month): int
     {
-        $target = DateUtil::startOfMonth(DateUtil::resolveMonth($month));
+        $range = DateUtil::monthRange(DateUtil::resolveMonth($month));
 
         return ExpenseRecurringAdjustment::query()
             ->where('is_fixed_cost', 1)
-            ->whereDate('start_date', '<=', $target)
-            ->where(function ($q) use ($target) {
+            ->where('start_date', '<=', $range['end'])
+            ->where(function ($q) use ($range) {
                 $q->whereNull('end_date')
-                    ->orWhereDate('end_date', '>=', $target);
+                    ->orWhere('end_date', '>=', $range['start']);
             })
             ->whereRaw(
                 'MOD(TIMESTAMPDIFF(MONTH, start_date, ?), interval_months) = 0',
-                [$target->format('Y-m-01')]
+                [$range['start']->format('Y-m-d')]
             )
             ->sum('amount');
     }

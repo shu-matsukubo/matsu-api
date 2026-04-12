@@ -74,13 +74,14 @@ class ExpenseQuery
 
         $list = ExpenseRecurringAdjustment::query()
             ->whereIn($key, $result->pluck($key)->filter())
-            ->whereDate('start_month', '<=', $target)
+            ->where('is_fixed_cost', 0)
+            ->whereDate('start_date', '<=', $target)
             ->where(function ($q) use ($target) {
-                $q->whereNull('end_month')
-                    ->orWhereDate('end_month', '>=', $target);
+                $q->whereNull('end_date')
+                    ->orWhereDate('end_date', '>=', $target);
             })
             ->whereRaw(
-                'MOD(TIMESTAMPDIFF(MONTH, start_month, ?), interval_months) = 0',
+                'MOD(TIMESTAMPDIFF(MONTH, start_date, ?), interval_months) = 0',
                 [$target->format('Y-m-01')]
             )
             ->get()
@@ -91,5 +92,34 @@ class ExpenseQuery
             $item->initial_balance += $extra;
             return $item;
         });
+    }
+
+    public function totalNetAmount(array $range): int
+    {
+        return Expense::query()
+            ->whereBetween('date', [$range['start'], $range['end']])
+            ->selectRaw('
+            SUM(amount - point_amount) as net_amount
+        ')
+            ->first()
+            ->net_amount ?? 0;
+    }
+
+    public function totalFixedCost(?string $month): int
+    {
+        $target = DateUtil::startOfMonth(DateUtil::resolveMonth($month));
+
+        return ExpenseRecurringAdjustment::query()
+            ->where('is_fixed_cost', 1)
+            ->whereDate('start_date', '<=', $target)
+            ->where(function ($q) use ($target) {
+                $q->whereNull('end_date')
+                    ->orWhereDate('end_date', '>=', $target);
+            })
+            ->whereRaw(
+                'MOD(TIMESTAMPDIFF(MONTH, start_date, ?), interval_months) = 0',
+                [$target->format('Y-m-01')]
+            )
+            ->sum('amount');
     }
 }

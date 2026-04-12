@@ -15,7 +15,7 @@ class SummaryResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $netAmount = (int) (($this->total_amount ?? 0) - ($this->total_point ?? 0));
+        $netAmount = (int) ($this->net_amount ?? 0);
 
         $res = [
             'total_amount'      => (int) ($this->total_amount ?? 0),

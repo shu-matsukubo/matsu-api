@@ -18,10 +18,12 @@ return new class extends Migration
             $table->ulid('category_id')->nullable();
 
             $table->integer('amount');
+            $table->boolean('is_fixed_cost')->default(false);
 
             $table->unsignedInteger('interval_months');
-            $table->date('start_month');
-            $table->date('end_month')->nullable();
+            $table->date('start_date');
+            $table->date('end_date')->nullable();
+            $table->string('memo')->nullable();
 
             $table->timestamps();
 

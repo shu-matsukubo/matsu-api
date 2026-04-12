@@ -32,17 +32,31 @@ class ExpenseService
      */
     private function getSummary(array $params): AnonymousResourceCollection
     {
-        $range = DateUtil::monthRange(DateUtil::resolveMonth($params['month']));
+        $month = $params['month'] ?? null;
+        $range = DateUtil::monthRange(DateUtil::resolveMonth($month));
 
         $groupBy = ExpenseGroupBy::from($params['group_by'] ?? null);
 
         // 履歴情報本体を取得
         $result = $this->query->aggregate($range, $groupBy);
 
+        // 一定周期ごとの変動費の計算
         if ($groupBy->supportsRecurring()) {
-            $result = $this->query->recurring($result, $groupBy, $params['month'] ?? null);
+            $result = $this->query->recurring($result, $groupBy, $month);
         }
-        return SummaryResource::collection($result);
+
+        // 合計金額を計算
+        $total = $this->query->totalNetAmount($range);
+
+        // 固定費を計算
+        $fixedCostTotal = $this->query->totalFixedCost($month);
+
+        return SummaryResource::collection($result)->additional([
+            'meta' => [
+                'total_net_amount' => (int) ($total),
+                'fixed_cost_net_amount' => (int) ($fixedCostTotal),
+            ],
+        ]);
     }
 
     /*

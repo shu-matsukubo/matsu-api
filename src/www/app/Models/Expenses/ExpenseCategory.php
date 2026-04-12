@@ -22,11 +22,20 @@ class ExpenseCategory extends BaseModel
             'is_active' => ActiveStatus::class,
         ]);
     }
+
     /*
     * 支払い履歴とのリレーション
     */
     public function expenses()
     {
         return $this->hasMany(Expense::class);
+    }
+
+    /*
+    * レポートルールテーブルとのリレーション
+    */
+    public function reportRules()
+    {
+        return $this->hasMany(ExpenseCategoryReportRule::class, 'category_id');
     }
 }

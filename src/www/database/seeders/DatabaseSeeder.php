@@ -17,7 +17,6 @@ class DatabaseSeeder extends Seeder
         $this->call([
             \Database\Seeders\Expenses\ExpenseCategoriesSeeder::class,
             \Database\Seeders\Expenses\ExpensePaymentMethodsSeeder::class,
-            \Database\Seeders\Expenses\ExpenseRecurringAdjustmentsSeeder::class,
         ]);
     }
 }

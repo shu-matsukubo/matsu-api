@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class ExpenseRecurringAdjustment extends Model
 {
     use HasUlids;
-    use SoftDeletes;
+
     protected $keyType = 'string';
     public $incrementing = false;
 

@@ -8,6 +8,7 @@ use App\Enums\Expenses\ExpenseGroupBy;
 use App\Models\Expenses\Expense;
 use App\Models\Expenses\ExpenseRecurringAdjustment;
 use App\Support\DateUtil;
+use App\Enums\Expenses\ReportType;
 
 class ExpenseQuery
 {
@@ -50,16 +51,17 @@ class ExpenseQuery
     public function aggregateByDate(array $range): Collection
     {
         return Expense::query()
+            ->includedInReport(ReportType::DAILY)
             ->select([
-                'date',
-                DB::raw('SUM(amount) as total_amount'),
-                DB::raw('SUM(point_amount) as total_point'),
-                DB::raw('(SUM(amount) - SUM(point_amount)) as net_amount'),
+                'expenses.date',
+                DB::raw('SUM(expenses.amount) as total_amount'),
+                DB::raw('SUM(expenses.point_amount) as total_point'),
+                DB::raw('(SUM(expenses.amount) - SUM(expenses.point_amount)) as net_amount'),
                 DB::raw('COUNT(*) as transaction_count'),
             ])
-            ->whereBetween('date', [$range['start'], $range['end']])
-            ->groupBy('date')
-            ->orderBy('date')
+            ->whereBetween('expenses.date', [$range['start'], $range['end']])
+            ->groupBy('expenses.date')
+            ->orderBy('expenses.date')
             ->get();
     }
 
@@ -73,6 +75,10 @@ class ExpenseQuery
         $list = ExpenseRecurringAdjustment::query()
             ->whereIn($key, $result->pluck($key)->filter())
             ->whereDate('start_month', '<=', $target)
+            ->where(function ($q) use ($target) {
+                $q->whereNull('end_month')
+                    ->orWhereDate('end_month', '>=', $target);
+            })
             ->whereRaw(
                 'MOD(TIMESTAMPDIFF(MONTH, start_month, ?), interval_months) = 0',
                 [$target->format('Y-m-01')]

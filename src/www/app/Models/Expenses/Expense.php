@@ -5,6 +5,8 @@ namespace App\Models\Expenses;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use App\Enums\Expenses\ReportType;
+use Illuminate\Database\Eloquent\Builder;
 
 #[Fillable([
     'amount',
@@ -34,5 +36,22 @@ class Expense extends BaseModel
     public function category()
     {
         return $this->belongsTo(ExpenseCategory::class);
+    }
+
+    /*
+    * レポート対象に含めるもののみ取得するスコープ
+    */
+    public function scopeIncludedInReport(Builder $query, ReportType $type): Builder
+    {
+        return $query
+            ->join('expense_categories', 'expenses.category_id', '=', 'expense_categories.id')
+            ->leftJoin('expense_category_report_rules as rules', function ($join) use ($type) {
+                $join->on('rules.category_id', '=', 'expense_categories.id')
+                    ->where('rules.report_type', $type->value);
+            })
+            ->where(function ($q) {
+                $q->whereNull('rules.is_included')
+                    ->orWhere('rules.is_included', true);
+            });
     }
 }

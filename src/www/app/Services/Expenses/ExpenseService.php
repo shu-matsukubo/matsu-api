@@ -42,7 +42,6 @@ class ExpenseService
         if ($groupBy->supportsRecurring()) {
             $result = $this->query->recurring($result, $groupBy, $params['month'] ?? null);
         }
-
         return SummaryResource::collection($result);
     }
 

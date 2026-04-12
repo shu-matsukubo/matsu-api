@@ -19,11 +19,14 @@ return new class extends Migration
 
             $table->integer('amount');
 
-            $table->integer('interval_months');
+            $table->unsignedInteger('interval_months');
             $table->date('start_month');
+            $table->date('end_month')->nullable();
 
             $table->timestamps();
-            $table->softDeletes();
+
+            $table->foreign('payment_method_id')->references('id')->on('expense_payment_methods')->nullOnDelete();
+            $table->foreign('category_id')->references('id')->on('expense_categories')->nullOnDelete();
         });
     }
 

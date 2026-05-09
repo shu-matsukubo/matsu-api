@@ -14,9 +14,5 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->call([
-            \Database\Seeders\Expenses\ExpenseCategoriesSeeder::class,
-            \Database\Seeders\Expenses\ExpensePaymentMethodsSeeder::class,
-        ]);
     }
 }

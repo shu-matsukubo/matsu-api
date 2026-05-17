@@ -2,13 +2,13 @@
 
 namespace App\Services\Expenses;
 
+use App\Enums\Expenses\ExpenseGroupBy;
 use App\Http\Resources\Expenses\ExpenseResource;
 use App\Http\Resources\Expenses\SummaryResource;
-use App\Support\DateUtil;
-use App\Enums\Expenses\ExpenseGroupBy;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use App\Queries\Expenses\ExpenseQuery;
 use App\Models\Expenses\Expense;
+use App\Queries\Expenses\ExpenseQuery;
+use App\Support\DateUtil;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class ExpenseService
 {
@@ -16,6 +16,7 @@ class ExpenseService
     {
         //
     }
+
     /**
      * モードに応じて支出データを取得
      */
@@ -32,24 +33,21 @@ class ExpenseService
      */
     private function getSummary(array $params): AnonymousResourceCollection
     {
-        $month = $params['month'] ?? null;
-        $range = DateUtil::monthRange(DateUtil::resolveMonth($month));
+        $range = DateUtil::resolveDateRange(
+            $params['start_date'] ?? null,
+            $params['end_date'] ?? null
+        );
 
         $groupBy = ExpenseGroupBy::from($params['group_by'] ?? null);
 
-        // 履歴情報本体を取得
         $result = $this->query->aggregate($range, $groupBy);
 
-        // 一定周期ごとの変動費の計算
         if ($groupBy->supportsRecurring()) {
-            $result = $this->query->recurring($result, $groupBy, $month);
+            $result = $this->query->recurring($result, $groupBy, $range);
         }
 
-        // 合計金額を計算
         $total = $this->query->totalNetAmount($range);
-
-        // 固定費を計算
-        $fixedCostTotal = $this->query->totalFixedCost($month);
+        $fixedCostTotal = $this->query->totalFixedCost($range);
 
         return SummaryResource::collection($result)->additional([
             'meta' => [
@@ -59,18 +57,19 @@ class ExpenseService
         ]);
     }
 
-    /*
-    * 支出履歴を取得
-    */
+    /**
+     * 支出履歴を取得
+     */
     private function getHistory(array $params): AnonymousResourceCollection
     {
-        // 範囲を指定
-        $range = DateUtil::monthRange(DateUtil::resolveMonth($params['month']));
+        $range = DateUtil::resolveDateRange(
+            $params['start_date'] ?? null,
+            $params['end_date'] ?? null
+        );
 
-        // 取得
         $result = Expense::whereBetween('date', [
             $range['start'],
-            $range['end']
+            $range['end'],
         ])
             ->orderBy('created_at', 'desc')
             ->get();
@@ -78,17 +77,17 @@ class ExpenseService
         return ExpenseResource::collection($result);
     }
 
-    /*
-    * 支出を作成
-    */
+    /**
+     * 支出を作成
+     */
     public function create(array $data)
     {
         return Expense::create($data);
     }
 
-    /*
-    * 支出を削除
-    */
+    /**
+     * 支出を削除
+     */
     public function delete(Expense $expense)
     {
         return $expense->delete();

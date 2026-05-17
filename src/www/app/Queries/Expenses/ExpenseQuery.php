@@ -2,13 +2,13 @@
 
 namespace App\Queries\Expenses;
 
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 use App\Enums\Expenses\ExpenseGroupBy;
+use App\Enums\Expenses\ReportType;
 use App\Models\Expenses\Expense;
 use App\Models\Expenses\ExpenseRecurringAdjustment;
-use App\Support\DateUtil;
-use App\Enums\Expenses\ReportType;
+use Carbon\CarbonImmutable;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 class ExpenseQuery
 {
@@ -65,12 +65,10 @@ class ExpenseQuery
             ->get();
     }
 
-    public function recurring(Collection $result, ExpenseGroupBy $groupBy, ?string $month): Collection
+    public function recurring(Collection $result, ExpenseGroupBy $groupBy, array $range): Collection
     {
         $key = $groupBy->recurringKey();
         if (!$key) return $result;
-
-        $range = DateUtil::monthRange(DateUtil::resolveMonth($month));
 
         $list = ExpenseRecurringAdjustment::query()
             ->whereIn($key, $result->pluck($key)->filter())
@@ -80,15 +78,13 @@ class ExpenseQuery
                 $q->whereNull('end_date')
                     ->orWhere('end_date', '>=', $range['start']);
             })
-            ->whereRaw(
-                'MOD(TIMESTAMPDIFF(MONTH, start_date, ?), interval_months) = 0',
-                [$range['start']->format('Y-m-d')]
-            )
             ->get()
             ->groupBy($key);
 
-        return $result->transform(function ($item) use ($list, $key) {
-            $extra = collect($list[$item->$key] ?? [])->sum('amount');
+        return $result->transform(function ($item) use ($list, $key, $range) {
+            $extra = collect($list[$item->$key] ?? [])->sum(function (ExpenseRecurringAdjustment $adjustment) use ($range) {
+                return $adjustment->amount * $this->countRecurringOccurrences($adjustment, $range);
+            });
             $item->initial_balance += $extra;
             return $item;
         });
@@ -105,10 +101,8 @@ class ExpenseQuery
             ->net_amount ?? 0;
     }
 
-    public function totalFixedCost(?string $month): int
+    public function totalFixedCost(array $range): int
     {
-        $range = DateUtil::monthRange(DateUtil::resolveMonth($month));
-
         return ExpenseRecurringAdjustment::query()
             ->where('is_fixed_cost', 1)
             ->where('start_date', '<=', $range['end'])
@@ -116,10 +110,56 @@ class ExpenseQuery
                 $q->whereNull('end_date')
                     ->orWhere('end_date', '>=', $range['start']);
             })
-            ->whereRaw(
-                'MOD(TIMESTAMPDIFF(MONTH, start_date, ?), interval_months) = 0',
-                [$range['start']->format('Y-m-d')]
-            )
-            ->sum('amount');
+            ->get()
+            ->sum(function (ExpenseRecurringAdjustment $adjustment) use ($range) {
+                return $adjustment->amount * $this->countRecurringOccurrences($adjustment, $range);
+            });
+    }
+
+    private function countRecurringOccurrences(ExpenseRecurringAdjustment $adjustment, array $range): int
+    {
+        $activeStart = CarbonImmutable::parse($adjustment->start_date);
+        $activeEnd = $adjustment->end_date
+            ? CarbonImmutable::parse($adjustment->end_date)
+            : null;
+        $intervalMonths = max(1, (int) $adjustment->interval_months);
+
+        $count = 0;
+        $cursor = $range['start']->startOfMonth();
+        $lastMonth = $range['end']->startOfMonth();
+        $startMonth = $activeStart->startOfMonth();
+
+        while ($cursor->lte($lastMonth)) {
+            $windowStart = $this->maxDate($cursor, $range['start']);
+            $windowEnd = $this->minDate($cursor->endOfMonth(), $range['end']);
+            $monthDiff = $this->monthDiff($startMonth, $cursor);
+
+            $isActiveInWindow = $windowEnd->gte($activeStart)
+                && (!$activeEnd || $windowStart->lte($activeEnd));
+            $isRecurringMonth = $monthDiff >= 0 && $monthDiff % $intervalMonths === 0;
+
+            if ($isActiveInWindow && $isRecurringMonth) {
+                $count++;
+            }
+
+            $cursor = $cursor->addMonth();
+        }
+
+        return $count;
+    }
+
+    private function monthDiff(CarbonImmutable $start, CarbonImmutable $end): int
+    {
+        return (($end->year - $start->year) * 12) + ($end->month - $start->month);
+    }
+
+    private function maxDate(CarbonImmutable $a, CarbonImmutable $b): CarbonImmutable
+    {
+        return $a->gte($b) ? $a : $b;
+    }
+
+    private function minDate(CarbonImmutable $a, CarbonImmutable $b): CarbonImmutable
+    {
+        return $a->lte($b) ? $a : $b;
     }
 }

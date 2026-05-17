@@ -6,7 +6,7 @@ use App\Enums\Expenses\ExpenseGroupBy;
 use App\Enums\Expenses\ReportType;
 use App\Models\Expenses\Expense;
 use App\Models\Expenses\ExpenseRecurringAdjustment;
-use Carbon\CarbonImmutable;
+use App\Support\DateUtil;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -130,9 +130,9 @@ class ExpenseQuery
         $startMonth = $activeStart->startOfMonth();
 
         while ($cursor->lte($lastMonth)) {
-            $windowStart = $this->maxDate($cursor, $range['start']);
-            $windowEnd = $this->minDate($cursor->endOfMonth(), $range['end']);
-            $monthDiff = $this->monthDiff($startMonth, $cursor);
+            $windowStart = DateUtil::max($cursor, $range['start']);
+            $windowEnd = DateUtil::min($cursor->endOfMonth(), $range['end']);
+            $monthDiff = DateUtil::monthDiff($startMonth, $cursor);
 
             $isActiveInWindow = $windowEnd->gte($activeStart)
                 && (!$activeEnd || $windowStart->lte($activeEnd));
@@ -146,20 +146,5 @@ class ExpenseQuery
         }
 
         return $count;
-    }
-
-    private function monthDiff(CarbonImmutable $start, CarbonImmutable $end): int
-    {
-        return (($end->year - $start->year) * 12) + ($end->month - $start->month);
-    }
-
-    private function maxDate(CarbonImmutable $a, CarbonImmutable $b): CarbonImmutable
-    {
-        return $a->gte($b) ? $a : $b;
-    }
-
-    private function minDate(CarbonImmutable $a, CarbonImmutable $b): CarbonImmutable
-    {
-        return $a->lte($b) ? $a : $b;
     }
 }

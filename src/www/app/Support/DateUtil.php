@@ -54,6 +54,21 @@ class DateUtil
         return $date->endOfMonth();
     }
 
+    public static function max(CarbonImmutable $a, CarbonImmutable $b): CarbonImmutable
+    {
+        return $a->gte($b) ? $a : $b;
+    }
+
+    public static function min(CarbonImmutable $a, CarbonImmutable $b): CarbonImmutable
+    {
+        return $a->lte($b) ? $a : $b;
+    }
+
+    public static function monthDiff(CarbonImmutable $start, CarbonImmutable $end): int
+    {
+        return (($end->year - $start->year) * 12) + ($end->month - $start->month);
+    }
+
     public static function monthRange(CarbonImmutable $date): array
     {
         return [

@@ -116,6 +116,16 @@ class ExpenseQuery
             ->get();
     }
 
+    public function history(array $range, ?string $categoryId = null): Collection
+    {
+        return Expense::query()
+            ->whereBetween('date', [$range['start'], $range['end']])
+            ->when($categoryId, fn ($query) => $query->where('category_id', $categoryId))
+            ->orderBy('date', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
+
     private function countRecurringOccurrences(ExpenseRecurringAdjustment $adjustment, array $range): int
     {
         $activeStart = CarbonImmutable::parse($adjustment->start_date);

@@ -3,7 +3,7 @@
 namespace App\Services\Expenses;
 
 use App\Enums\Expenses\ExpenseGroupBy;
-use App\Http\Resources\Expenses\ExpenseResource;
+use App\Http\Resources\Expenses\ExpenseHistoryResource;
 use App\Http\Resources\Expenses\SummaryResource;
 use App\Models\Expenses\Expense;
 use App\Models\Expenses\ExpenseRecurringAdjustment;
@@ -27,6 +27,7 @@ class ExpenseService
     {
         return match ($mode) {
             'summary' => $this->getSummary($params),
+            'history' => $this->getHistory($params),
             default   => $this->getHistory($params),
         };
     }
@@ -72,14 +73,12 @@ class ExpenseService
             $params['end_date'] ?? null
         );
 
-        $result = Expense::whereBetween('date', [
-            $range['start'],
-            $range['end'],
-        ])
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $result = $this->query->history(
+            $range,
+            $params['category_id'] ?? null
+        );
 
-        return ExpenseResource::collection($result);
+        return ExpenseHistoryResource::collection($result);
     }
 
     /**

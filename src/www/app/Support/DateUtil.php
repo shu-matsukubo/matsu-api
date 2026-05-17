@@ -37,6 +37,15 @@ class DateUtil
         return $parsed;
     }
 
+    public static function parseDateValue(mixed $date, string $field): CarbonImmutable
+    {
+        if ($date instanceof CarbonImmutable) {
+            return $date->startOfDay();
+        }
+
+        return self::parseDate((string) $date, $field);
+    }
+
     public static function resolveMonth(?string $month): CarbonImmutable
     {
         return $month
@@ -67,6 +76,16 @@ class DateUtil
     public static function monthDiff(CarbonImmutable $start, CarbonImmutable $end): int
     {
         return (($end->year - $start->year) * 12) + ($end->month - $start->month);
+    }
+
+    public static function dayOfMonth(CarbonImmutable $date): int
+    {
+        return $date->day;
+    }
+
+    public static function dateInMonth(CarbonImmutable $month, int $day): CarbonImmutable
+    {
+        return $month->startOfMonth()->setDay(min($day, $month->endOfMonth()->day));
     }
 
     public static function monthRange(CarbonImmutable $date): array

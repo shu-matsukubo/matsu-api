@@ -6,9 +6,12 @@ use App\Enums\Expenses\ExpenseGroupBy;
 use App\Http\Resources\Expenses\ExpenseResource;
 use App\Http\Resources\Expenses\SummaryResource;
 use App\Models\Expenses\Expense;
+use App\Models\Expenses\ExpenseRecurringAdjustment;
 use App\Queries\Expenses\ExpenseQuery;
 use App\Support\DateUtil;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Collection;
 
 class ExpenseService
 {
@@ -47,7 +50,7 @@ class ExpenseService
         }
 
         $expenseTotal = $this->query->totalNetAmount($range);
-        $fixedCosts = $this->query->fixedCosts($range);
+        $fixedCosts = $this->buildFixedCosts($this->query->fixedCostAdjustments($range), $range);
         $fixedCostTotal = $fixedCosts->sum('amount');
 
         return SummaryResource::collection($result)->additional([
@@ -93,5 +96,68 @@ class ExpenseService
     public function delete(Expense $expense)
     {
         return $expense->delete();
+    }
+
+    private function buildFixedCosts(Collection $adjustments, array $range): Collection
+    {
+        return $adjustments
+            ->flatMap(fn (ExpenseRecurringAdjustment $adjustment) => $this->fixedCostOccurrences($adjustment, $range))
+            ->sortBy([
+                ['payment_date', 'asc'],
+                ['name', 'asc'],
+            ])
+            ->values();
+    }
+
+    private function fixedCostOccurrences(ExpenseRecurringAdjustment $adjustment, array $range): Collection
+    {
+        $activeStart = DateUtil::parseDateValue($adjustment->start_date, 'start_date');
+        $activeEnd = $adjustment->end_date
+            ? DateUtil::parseDateValue($adjustment->end_date, 'end_date')
+            : null;
+        $intervalMonths = max(1, (int) $adjustment->interval_months);
+        $paymentDay = $this->resolvePaymentDay($adjustment, $activeStart);
+
+        $items = collect();
+        $cursor = $range['start']->startOfMonth();
+        $lastMonth = $range['end']->startOfMonth();
+        $startMonth = $activeStart->startOfMonth();
+
+        while ($cursor->lte($lastMonth)) {
+            $monthDiff = DateUtil::monthDiff($startMonth, $cursor);
+            $isRecurringMonth = $monthDiff >= 0 && $monthDiff % $intervalMonths === 0;
+
+            if ($isRecurringMonth) {
+                $paymentDate = DateUtil::dateInMonth($cursor, $paymentDay);
+                $isActive = $paymentDate->gte($activeStart)
+                    && (!$activeEnd || $paymentDate->lte($activeEnd));
+                $isInRange = $paymentDate->betweenIncluded($range['start'], $range['end']);
+
+                if ($isActive && $isInRange) {
+                    $items->push([
+                        'name' => $adjustment->memo ?? '',
+                        'payment_date' => DateUtil::toDateString($paymentDate),
+                        'amount' => (int) $adjustment->amount,
+                    ]);
+                }
+            }
+
+            $cursor = $cursor->addMonth();
+        }
+
+        return $items;
+    }
+
+    private function resolvePaymentDay(
+        ExpenseRecurringAdjustment $adjustment,
+        CarbonImmutable $activeStart
+    ): int {
+        $paymentDay = (int) ($adjustment->payment_day ?? 0);
+
+        if ($paymentDay < 1) {
+            return DateUtil::dayOfMonth($activeStart);
+        }
+
+        return $paymentDay;
     }
 }

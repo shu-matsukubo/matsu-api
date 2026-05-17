@@ -102,12 +102,7 @@ class ExpenseQuery
             ->net_amount ?? 0;
     }
 
-    public function totalFixedCost(array $range): int
-    {
-        return $this->fixedCosts($range)->sum('amount');
-    }
-
-    public function fixedCosts(array $range): Collection
+    public function fixedCostAdjustments(array $range): Collection
     {
         return ExpenseRecurringAdjustment::query()
             ->where('is_fixed_cost', 1)
@@ -118,15 +113,7 @@ class ExpenseQuery
             })
             ->orderBy('payment_day')
             ->orderBy('memo')
-            ->get()
-            ->flatMap(function (ExpenseRecurringAdjustment $adjustment) use ($range) {
-                return $this->fixedCostOccurrences($adjustment, $range);
-            })
-            ->sortBy([
-                ['payment_date', 'asc'],
-                ['name', 'asc'],
-            ])
-            ->values();
+            ->get();
     }
 
     private function countRecurringOccurrences(ExpenseRecurringAdjustment $adjustment, array $range): int
@@ -161,49 +148,4 @@ class ExpenseQuery
         return $count;
     }
 
-    private function fixedCostOccurrences(ExpenseRecurringAdjustment $adjustment, array $range): Collection
-    {
-        $activeStart = CarbonImmutable::parse($adjustment->start_date);
-        $activeEnd = $adjustment->end_date
-            ? CarbonImmutable::parse($adjustment->end_date)
-            : null;
-        $intervalMonths = max(1, (int) $adjustment->interval_months);
-        $paymentDay = max(1, (int) ($adjustment->payment_day ?? $activeStart->day));
-
-        $items = collect();
-        $cursor = $range['start']->startOfMonth();
-        $lastMonth = $range['end']->startOfMonth();
-        $startMonth = $activeStart->startOfMonth();
-
-        while ($cursor->lte($lastMonth)) {
-            $monthDiff = DateUtil::monthDiff($startMonth, $cursor);
-            $isRecurringMonth = $monthDiff >= 0 && $monthDiff % $intervalMonths === 0;
-
-            if ($isRecurringMonth) {
-                $paymentDate = $this->paymentDateInMonth($cursor, $paymentDay);
-                $isActive = $paymentDate->gte($activeStart)
-                    && (!$activeEnd || $paymentDate->lte($activeEnd));
-                $isInRange = $paymentDate->betweenIncluded($range['start'], $range['end']);
-
-                if ($isActive && $isInRange) {
-                    $items->push([
-                        'name' => $adjustment->memo ?? '',
-                        'payment_date' => DateUtil::toDateString($paymentDate),
-                        'amount' => (int) $adjustment->amount,
-                    ]);
-                }
-            }
-
-            $cursor = $cursor->addMonth();
-        }
-
-        return $items;
-    }
-
-    private function paymentDateInMonth(CarbonImmutable $month, int $paymentDay): CarbonImmutable
-    {
-        $day = min($paymentDay, $month->endOfMonth()->day);
-
-        return $month->setDay($day);
-    }
 }

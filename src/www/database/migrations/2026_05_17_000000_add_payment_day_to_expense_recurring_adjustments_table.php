@@ -18,9 +18,14 @@ return new class extends Migration
 
         DB::table('expense_recurring_adjustments')
             ->whereNull('payment_day')
-            ->update([
-                'payment_day' => DB::raw('DAY(start_date)'),
-            ]);
+            ->orderBy('id')
+            ->each(function ($adjustment) {
+                DB::table('expense_recurring_adjustments')
+                    ->where('id', $adjustment->id)
+                    ->update([
+                        'payment_day' => (int) date('j', strtotime($adjustment->start_date)),
+                    ]);
+            });
     }
 
     /**

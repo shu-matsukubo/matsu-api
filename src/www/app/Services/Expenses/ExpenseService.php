@@ -46,13 +46,15 @@ class ExpenseService
             $result = $this->query->recurring($result, $groupBy, $range);
         }
 
-        $total = $this->query->totalNetAmount($range);
-        $fixedCostTotal = $this->query->totalFixedCost($range);
+        $expenseTotal = $this->query->totalNetAmount($range);
+        $fixedCosts = $this->query->fixedCosts($range);
+        $fixedCostTotal = $fixedCosts->sum('amount');
 
         return SummaryResource::collection($result)->additional([
             'meta' => [
-                'total_net_amount' => (int) ($total),
+                'total_net_amount' => (int) ($expenseTotal + $fixedCostTotal),
                 'fixed_cost_net_amount' => (int) ($fixedCostTotal),
+                'fixed_costs' => $fixedCosts,
             ],
         ]);
     }

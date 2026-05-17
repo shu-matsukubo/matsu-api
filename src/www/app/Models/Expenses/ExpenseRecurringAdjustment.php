@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
     'payment_method_id',
     'category_id',
     'amount',
+    'payment_day',
     'is_fixed_cost',
     'interval_months',
     'start_date',

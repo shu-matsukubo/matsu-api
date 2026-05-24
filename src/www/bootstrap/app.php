@@ -13,6 +13,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->api(append: [
+            \App\Http\Middleware\AuthenticateWithJwt::class,
             \App\Http\Middleware\WriteLogMiddleware::class,
         ]);
     })

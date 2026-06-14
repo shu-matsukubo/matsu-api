@@ -28,7 +28,7 @@ class ExpenseService
         return match ($mode) {
             'summary' => $this->getSummary($params),
             'history' => $this->getHistory($params),
-            default   => $this->getHistory($params),
+            default => $this->getHistory($params),
         };
     }
 
@@ -129,7 +129,7 @@ class ExpenseService
             if ($isRecurringMonth) {
                 $paymentDate = DateUtil::dateInMonth($cursor, $paymentDay);
                 $isActive = $paymentDate->gte($activeStart)
-                    && (!$activeEnd || $paymentDate->lte($activeEnd));
+                    && (! $activeEnd || $paymentDate->lte($activeEnd));
                 $isInRange = $paymentDate->betweenIncluded($range['start'], $range['end']);
 
                 if ($isActive && $isInRange) {

@@ -69,7 +69,9 @@ class ExpenseQuery
     public function recurring(Collection $result, ExpenseGroupBy $groupBy, array $range): Collection
     {
         $key = $groupBy->recurringKey();
-        if (!$key) return $result;
+        if (! $key) {
+            return $result;
+        }
 
         $list = ExpenseRecurringAdjustment::query()
             ->whereIn($key, $result->pluck($key)->filter())
@@ -87,6 +89,7 @@ class ExpenseQuery
                 return $adjustment->amount * $this->countRecurringOccurrences($adjustment, $range);
             });
             $item->initial_balance += $extra;
+
             return $item;
         });
     }
@@ -145,7 +148,7 @@ class ExpenseQuery
             $monthDiff = DateUtil::monthDiff($startMonth, $cursor);
 
             $isActiveInWindow = $windowEnd->gte($activeStart)
-                && (!$activeEnd || $windowStart->lte($activeEnd));
+                && (! $activeEnd || $windowStart->lte($activeEnd));
             $isRecurringMonth = $monthDiff >= 0 && $monthDiff % $intervalMonths === 0;
 
             if ($isActiveInWindow && $isRecurringMonth) {
@@ -157,5 +160,4 @@ class ExpenseQuery
 
         return $count;
     }
-
 }

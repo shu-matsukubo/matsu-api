@@ -2,7 +2,6 @@
 
 namespace App\Services\Expenses;
 
-use App\Models\Expenses\Expense;
 use App\Models\Expenses\ExpensePaymentMethod;
 
 class PaymentMethodService
@@ -16,6 +15,7 @@ class PaymentMethodService
             ->orderBy('sort_order')
             ->get();
     }
+
     /*
     * 支払方法を作成
     */

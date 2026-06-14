@@ -9,7 +9,7 @@ trait HasActiveScope
     public function scopeActive($query)
     {
         return $query->where(
-            $this->getTable() . '.is_active',
+            $this->getTable().'.is_active',
             ActiveStatus::ACTIVE->value
         );
     }

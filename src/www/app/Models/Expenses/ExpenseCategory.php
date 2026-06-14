@@ -2,10 +2,10 @@
 
 namespace App\Models\Expenses;
 
-use App\Models\BaseModel;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use App\Enums\ActiveStatus;
+use App\Models\BaseModel;
 use App\Models\Traits\HasActiveScope;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 
 #[Fillable([
     'name',

@@ -1,6 +1,9 @@
 <?php
 
+use App\Providers\AppServiceProvider;
+use App\Providers\QueryLogServiceProvider;
+
 return [
-    App\Providers\AppServiceProvider::class,
-    App\Providers\QueryLogServiceProvider::class,
+    AppServiceProvider::class,
+    QueryLogServiceProvider::class,
 ];

@@ -2,11 +2,11 @@
 
 namespace App\Models\Expenses;
 
-use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Enums\Expenses\ReportType;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
-use App\Enums\Expenses\ReportType;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable([
     'amount',

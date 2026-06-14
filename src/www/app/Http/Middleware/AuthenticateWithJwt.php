@@ -73,7 +73,7 @@ class AuthenticateWithJwt
         $jwk = $this->findJwk($kid);
         $publicKey = $this->jwkToPem($jwk);
         $signature = $this->base64UrlDecode($encodedSignature);
-        $signingInput = $encodedHeader . '.' . $encodedPayload;
+        $signingInput = $encodedHeader.'.'.$encodedPayload;
         $verified = openssl_verify($signingInput, $signature, $publicKey, OPENSSL_ALGO_SHA256);
 
         if ($verified !== 1) {
@@ -128,7 +128,7 @@ class AuthenticateWithJwt
     }
 
     /**
-     * @param array<string, mixed> $payload
+     * @param  array<string, mixed>  $payload
      */
     private function assertClaims(array $payload): void
     {
@@ -167,7 +167,7 @@ class AuthenticateWithJwt
     }
 
     /**
-     * @param array<string, mixed> $jwk
+     * @param  array<string, mixed>  $jwk
      */
     private function jwkToPem(array $jwk): string
     {
@@ -179,25 +179,25 @@ class AuthenticateWithJwt
         $exponent = $this->base64UrlDecode($jwk['e']);
         $rsaPublicKey = $this->asn1Sequence(
             $this->asn1Integer($modulus)
-            . $this->asn1Integer($exponent)
+            .$this->asn1Integer($exponent)
         );
         $algorithmIdentifier = $this->asn1Sequence(
             $this->asn1ObjectIdentifier("\x2a\x86\x48\x86\xf7\x0d\x01\x01\x01")
-            . "\x05\x00"
+            ."\x05\x00"
         );
         $subjectPublicKeyInfo = $this->asn1Sequence(
             $algorithmIdentifier
-            . "\x03" . $this->asn1Length(strlen($rsaPublicKey) + 1) . "\x00" . $rsaPublicKey
+            ."\x03".$this->asn1Length(strlen($rsaPublicKey) + 1)."\x00".$rsaPublicKey
         );
 
         return "-----BEGIN PUBLIC KEY-----\n"
-            . chunk_split(base64_encode($subjectPublicKeyInfo), 64, "\n")
-            . "-----END PUBLIC KEY-----\n";
+            .chunk_split(base64_encode($subjectPublicKeyInfo), 64, "\n")
+            ."-----END PUBLIC KEY-----\n";
     }
 
     private function base64UrlDecode(string $value): string
     {
-        $decoded = base64_decode(strtr($value, '-_', '+/') . str_repeat('=', (4 - strlen($value) % 4) % 4), true);
+        $decoded = base64_decode(strtr($value, '-_', '+/').str_repeat('=', (4 - strlen($value) % 4) % 4), true);
 
         if ($decoded === false) {
             throw new \RuntimeException('Invalid base64url value.');
@@ -208,7 +208,7 @@ class AuthenticateWithJwt
 
     private function asn1Sequence(string $value): string
     {
-        return "\x30" . $this->asn1Length(strlen($value)) . $value;
+        return "\x30".$this->asn1Length(strlen($value)).$value;
     }
 
     private function asn1Integer(string $value): string
@@ -220,15 +220,15 @@ class AuthenticateWithJwt
         }
 
         if ((ord($value[0]) & 0x80) !== 0) {
-            $value = "\x00" . $value;
+            $value = "\x00".$value;
         }
 
-        return "\x02" . $this->asn1Length(strlen($value)) . $value;
+        return "\x02".$this->asn1Length(strlen($value)).$value;
     }
 
     private function asn1ObjectIdentifier(string $value): string
     {
-        return "\x06" . $this->asn1Length(strlen($value)) . $value;
+        return "\x06".$this->asn1Length(strlen($value)).$value;
     }
 
     private function asn1Length(int $length): string
@@ -240,10 +240,10 @@ class AuthenticateWithJwt
         $bytes = '';
 
         while ($length > 0) {
-            $bytes = chr($length & 0xff) . $bytes;
+            $bytes = chr($length & 0xFF).$bytes;
             $length >>= 8;
         }
 
-        return chr(0x80 | strlen($bytes)) . $bytes;
+        return chr(0x80 | strlen($bytes)).$bytes;
     }
 }

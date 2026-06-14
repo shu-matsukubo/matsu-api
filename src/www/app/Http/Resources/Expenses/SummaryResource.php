@@ -2,9 +2,9 @@
 
 namespace App\Http\Resources\Expenses;
 
+use App\Support\DateUtil;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use App\Support\DateUtil;
 
 class SummaryResource extends JsonResource
 {
@@ -18,9 +18,9 @@ class SummaryResource extends JsonResource
         $netAmount = (int) ($this->net_amount ?? 0);
 
         $res = [
-            'total_amount'      => (int) ($this->total_amount ?? 0),
-            'total_point'       => (int) ($this->total_point ?? 0),
-            'net_amount'        => $netAmount,
+            'total_amount' => (int) ($this->total_amount ?? 0),
+            'total_point' => (int) ($this->total_point ?? 0),
+            'net_amount' => $netAmount,
             'transaction_count' => (int) ($this->transaction_count ?? 0),
         ];
 

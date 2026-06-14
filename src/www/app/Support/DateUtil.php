@@ -28,7 +28,7 @@ class DateUtil
     {
         $parsed = CarbonImmutable::createFromFormat('!Y-m-d', $date, self::TZ);
 
-        if (!$parsed || $parsed->format('Y-m-d') !== $date) {
+        if (! $parsed || $parsed->format('Y-m-d') !== $date) {
             throw ValidationException::withMessages([
                 $field => 'The '.$field.' must be a valid date in Y-m-d format.',
             ]);
@@ -106,14 +106,14 @@ class DateUtil
             $end = self::parseDate($endDate, 'end_date');
         }
 
-        if (!isset($start) && !isset($end)) {
+        if (! isset($start) && ! isset($end)) {
             $range = self::monthRange(self::now());
-        } elseif (!isset($start)) {
+        } elseif (! isset($start)) {
             $range = [
                 'start' => self::startOfMonth($end),
                 'end' => $end,
             ];
-        } elseif (!isset($end)) {
+        } elseif (! isset($end)) {
             $range = [
                 'start' => $start,
                 'end' => self::endOfMonth($start),

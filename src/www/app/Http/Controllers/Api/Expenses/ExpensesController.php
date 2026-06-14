@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Api\Expenses;
 
-use App\Services\Expenses\ExpenseService;
-use App\Models\Expenses\Expense;
-use Illuminate\Http\Request;
 use App\Http\Controllers\Api\BaseApiController;
+use App\Models\Expenses\Expense;
+use App\Services\Expenses\ExpenseService;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class ExpensesController extends BaseApiController
@@ -60,6 +60,7 @@ class ExpensesController extends BaseApiController
     public function destroy(Expense $expense)
     {
         $this->expenseService->delete($expense);
+
         return response()->json(['result' => 1], 200);
     }
 }

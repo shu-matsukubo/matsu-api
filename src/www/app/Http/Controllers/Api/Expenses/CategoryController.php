@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Api\Expenses;
 
-use Illuminate\Http\Request;
-use App\Services\Expenses\CategoryService;
-use App\Http\Resources\Expenses\CategoryResource;
 use App\Http\Controllers\Api\BaseApiController;
+use App\Http\Resources\Expenses\CategoryResource;
+use App\Services\Expenses\CategoryService;
+use Illuminate\Http\Request;
 
 class CategoryController extends BaseApiController
 {
@@ -26,6 +26,7 @@ class CategoryController extends BaseApiController
     {
         // 一覧を取得
         $categories = $this->categoryService->list();
+
         return CategoryResource::collection($categories);
     }
 

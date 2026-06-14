@@ -2,9 +2,9 @@
 
 namespace App\Enums\Expenses;
 
+use App\Models\Expenses\Expense;
 use App\Models\Expenses\ExpenseCategory;
 use App\Models\Expenses\ExpensePaymentMethod;
-use App\Models\Expenses\Expense;
 
 enum ExpenseGroupBy: string
 {

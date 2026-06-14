@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Api\Expenses;
 
+use App\Http\Controllers\Api\BaseApiController;
+use App\Http\Resources\Expenses\PaymentMethodResource;
 use App\Services\Expenses\PaymentMethodService;
 use Illuminate\Http\Request;
-use App\Http\Resources\Expenses\PaymentMethodResource;
-use App\Http\Controllers\Api\BaseApiController;
 
 class PaymentMethodController extends BaseApiController
 {
@@ -26,6 +26,7 @@ class PaymentMethodController extends BaseApiController
     {
         // 一覧を取得
         $categories = $this->paymentMethodService->list();
+
         return PaymentMethodResource::collection($categories);
     }
 

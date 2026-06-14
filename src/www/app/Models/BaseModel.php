@@ -8,7 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 abstract class BaseModel extends Model
 {
     use HasUlids;
+
     protected $keyType = 'string';
+
     public $incrementing = false;
 
     protected function casts(): array

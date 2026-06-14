@@ -2,8 +2,8 @@
 
 namespace App\Http\Resources\Expenses;
 
-use Illuminate\Http\Request;
 use App\Http\Resources\BaseResource;
+use Illuminate\Http\Request;
 
 class PaymentMethodResource extends BaseResource
 {

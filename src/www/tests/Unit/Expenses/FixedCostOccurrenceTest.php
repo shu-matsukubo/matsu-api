@@ -79,7 +79,7 @@ class FixedCostOccurrenceTest extends TestCase
         $method = new ReflectionMethod(ExpenseService::class, 'fixedCostOccurrences');
         $method->setAccessible(true);
 
-        return $method->invoke(new ExpenseService(new ExpenseQuery()), $adjustment, [
+        return $method->invoke(new ExpenseService(new ExpenseQuery), $adjustment, [
             'start' => CarbonImmutable::parse('2026-05-01'),
             'end' => CarbonImmutable::parse('2026-05-31'),
         ]);

@@ -1,9 +1,9 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\Expenses\CategoryController;
 use App\Http\Controllers\Api\Expenses\ExpensesController;
 use App\Http\Controllers\Api\Expenses\PaymentMethodController;
-use App\Http\Controllers\Api\Expenses\CategoryController;
+use Illuminate\Support\Facades\Route;
 
 // 支出監理APIルート
 Route::apiResource('expenses', ExpensesController::class);

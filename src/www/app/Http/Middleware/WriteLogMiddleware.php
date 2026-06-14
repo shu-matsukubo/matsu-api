@@ -20,6 +20,7 @@ class WriteLogMiddleware
         Log::info('Request Start', $request->all());
         $response = $next($request);
         Log::info('Request End');
+
         return $response;
     }
 }

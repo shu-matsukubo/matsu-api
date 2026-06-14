@@ -2,7 +2,7 @@ services:
   web:
     build:
       context: docker_config/web/
-    container_name: Kakeibo_web
+    container_name: matsu-web
     ports:
       - 18080:80
     working_dir: /var/www
@@ -15,12 +15,12 @@ services:
   db:
     build:
       context: docker_config/db/
-    container_name: Kakeibo_db
+    container_name: matsu-db
     volumes:
       # ここにdbデータがある（バックアップを最後にvolumeする）
       - db_data:/var/lib/mysql
     environment:
-      - MYSQL_DATABASE=Kakeibo
+      - MYSQL_DATABASE=matsu
       - MYSQL_HOST=localhost
       - MYSQL_USER=test_user
       - MYSQL_PASSWORD=test_user_pass

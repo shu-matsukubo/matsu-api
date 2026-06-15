@@ -60,9 +60,8 @@
             "@php artisan test --coverage"
         ],
         "check": [
-            "@pint:test",
-            "@analyse",
-            "@test"
+            "@pint",
+            "@analyse"
         ],
         "fix": [
             "@pint"

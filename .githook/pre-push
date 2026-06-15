@@ -1,0 +1,45 @@
+#!/bin/sh
+
+echo "フォーマットチェック & 静的解析を実行します..."
+
+# Pintで自動修正
+echo ""
+echo "Pint: コードフォーマットを適用中..."
+docker compose exec -T web composer pint
+
+PINT_EXIT=$?
+
+if [ $PINT_EXIT -ne 0 ]; then
+  echo "Pintの実行に失敗しました"
+  exit 1
+fi
+
+# Gitの差分確認（Pintが修正を加えたか）
+if ! git diff --quiet; then
+  echo ""
+  echo "Pintがコードを修正しました。"
+  echo "修正内容を確認してからcommit & pushしてください。"
+  echo ""
+  git diff --stat
+  exit 1
+fi
+
+echo "フォーマット: OK"
+
+# PHPStan静的解析
+echo ""
+echo "PHPStan: 静的解析を実行中..."
+docker compose exec -T web composer analyse
+
+PHPSTAN_EXIT=$?
+
+if [ $PHPSTAN_EXIT -ne 0 ]; then
+  echo ""
+  echo "PHPStanのエラーを修正してからpushしてください。"
+  exit 1
+fi
+
+echo "静的解析: OK"
+echo ""
+echo "すべてのチェックが通りました！"
+exit 0

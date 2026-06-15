@@ -1,50 +1,17 @@
-# Larastanの拡張設定を読み込み - Laravel固有のコードパターンを解析可能にする
 includes:
-    - ./vendor/nunomaduro/larastan/extension.neon
+    - ./vendor/larastan/larastan/extension.neon
 
 parameters:
-    # 解析の厳格さを0〜9の範囲で指定（6は比較的厳格なレベル）
-    # レベル0: 基本的な構文エラーのみ
-    # レベル9: 最も厳格（すべての型チェックを含む）
     level: 10
 
-    # 解析対象のディレクトリを指定
     paths:
-        - app     # アプリケーションのメインコード
-        - config  # 設定ファイル
-        - database # マイグレーションとシーダー
-        - routes  # ルート定義
-        - tests   # テストコード
+        - app
+        - routes
+        - tests
 
-    # 解析から除外するパス
     excludePaths:
-        - ./vendor/* # サードパーティのライブラリ
-        - ./storage/* # 一時ファイルや生成されたファイル
+        - ./vendor/*
+        - ./storage/*
 
-    # 配列やコレクションの値の型が指定されていない場合のエラーを無効化
-    checkMissingIterableValueType: false
-
-    # ジェネリッククラスの型パラメータが指定されていない場合のエラーを無効化
-    checkGenericClassInNonGenericObjectType: false
-
-    # 特定のエラーパターンを無視
-    ignoreErrors:
-        # Laravelのリソースクラスでの動的プロパティアクセスに関するエラーを無視
-        - '#Access to an undefined property App\\Http\\Resources\\[a-zA-Z0-9\\_]+::\$[a-zA-Z0-9\\_]+#'
-        # Eloquentモデルの動的メソッド呼び出しに関するエラーを無視
-        - '#Call to an undefined method Illuminate\\Database\\Eloquent\\[a-zA-Z0-9\\_]+::findOrFail\(\)#'
-
-    # ignoreErrorsで指定したパターンに一致しないエラーの報告を無効化
     reportUnmatchedIgnoredErrors: false
-
-    # PHPDocコメントの型情報を確実なものとして扱わない
-    treatPhpDocTypesAsCertain: false
-
-    # Bladeテンプレートの解析を有効化
-    bladeTemplateView:
-        enabled: true # Bladeテンプレートの解析を有効化
-        additionalExtensions: [] # 追加のBladeテンプレート拡張子を指定
-
-    # テストの解析設定
-    checkPhpDocMissingReturn: false # テストメソッドなどでPHPDocの@return注釈がない場合のエラーを無効化
-    checkModelProperties: true # Eloquentモデルのプロパティチェックを有効化（モデルで定義されていないプロパティへのアクセスを検出）
+    checkModelProperties: true

@@ -5,7 +5,7 @@ echo "フォーマットチェック & 静的解析を実行します..."
 # Pintで自動修正
 echo ""
 echo "Pint: コードフォーマットを適用中..."
-docker compose exec -T web composer pint
+docker compose exec -T matsu-web composer pint
 
 PINT_EXIT=$?
 
@@ -29,7 +29,7 @@ echo "フォーマット: OK"
 # PHPStan静的解析
 echo ""
 echo "PHPStan: 静的解析を実行中..."
-docker compose exec -T web composer analyse
+docker compose exec -T matsu-web composer analyse
 
 PHPSTAN_EXIT=$?
 

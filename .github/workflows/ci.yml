@@ -32,10 +32,10 @@ jobs:
       - name: チェックアウト
         uses: actions/checkout@v4
 
-      - name: PHP 8.3 セットアップ
+      - name: PHP 8.4 セットアップ
         uses: shivammathur/setup-php@v2
         with:
-          php-version: "8.3"
+          php-version: "8.4"
           extensions: mbstring, pdo, pdo_mysql
 
       - name: composer install

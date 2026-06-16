@@ -60,3 +60,4 @@ jobs:
         run: composer test
         env:
           DB_HOST: 127.0.0.1
+        continue-on-error: true

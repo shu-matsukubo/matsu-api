@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - main # develop → main のPR時に発火
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src/www
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: matsu
+          MYSQL_USER: test_user
+          MYSQL_PASSWORD: test_user_pass
+          MYSQL_ROOT_PASSWORD: test_root_pass
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+    steps:
+      - name: チェックアウト
+        uses: actions/checkout@v4
+
+      - name: PHP 8.3 セットアップ
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: mbstring, pdo, pdo_mysql
+
+      - name: composer install
+        run: composer install --no-interaction --prefer-dist
+
+      - name: .env.testing をコピー
+        run: cp .env.testing .env
+
+      - name: マイグレーション実行
+        run: php artisan migrate --force
+        env:
+          DB_HOST: 127.0.0.1
+
+      - name: pint（コードスタイル）
+        run: composer pint:test
+
+      - name: analyse（PHPStan）
+        run: composer analyse
+
+      - name: test（PHPUnit）
+        run: composer test
+        env:
+          DB_HOST: 127.0.0.1

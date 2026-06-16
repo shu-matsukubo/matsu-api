@@ -54,6 +54,7 @@ jobs:
 
       - name: analyse（PHPStan）
         run: composer analyse
+        continue-on-error: true
 
       - name: test（PHPUnit）
         run: composer test

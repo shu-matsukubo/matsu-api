@@ -1,10 +1,10 @@
 <?php
 
-namespace Tests\Unit;
+namespace Tests\Feature;
 
 use PHPUnit\Framework\TestCase;
 
-class ExampleTest extends TestCase
+class ExampleTestFeature extends TestCase
 {
     /**
      * A basic test example.

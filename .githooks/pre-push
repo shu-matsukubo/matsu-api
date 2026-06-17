@@ -2,19 +2,34 @@
 
 echo "フォーマットチェック & 静的解析を実行します..."
 
+# pushされる範囲のPHPファイルを取得
+while read local_ref local_sha remote_ref remote_sha; do
+  if [ "$remote_sha" = "0000000000000000000000000000000000000000" ]; then
+    # 新規ブランチの場合はHEADとの差分
+    DIFF_FILES=$(git diff --name-only --diff-filter=ACMRT HEAD -- '*.php' | sed 's|src/www/||g')
+  else
+    DIFF_FILES=$(git diff --name-only --diff-filter=ACMRT "$remote_sha" "$local_sha" -- '*.php' | sed 's|src/www/||g')
+  fi
+done
+
+if [ -z "$DIFF_FILES" ]; then
+  echo "対象PHPファイルなし。スキップします。"
+  exit 0
+fi
+
 # Pintで自動修正
 echo ""
-echo "Pint: コードフォーマットを適用中..."
-docker compose exec -T web composer pint
+echo "Pint: フォーマットを適用中..."
+echo "$DIFF_FILES" | xargs -r docker compose exec -T web ./vendor/bin/pint
 
 PINT_EXIT=$?
 
 if [ $PINT_EXIT -ne 0 ]; then
-  echo "Pintの実行に失敗しました"
+  echo "Pintの実行に失敗しました。コンテナが起動しているか確認してください。"
   exit 1
 fi
 
-# Gitの差分確認（Pintが修正を加えたか）
+# Pintが修正を加えたか確認
 if ! git diff --quiet; then
   echo ""
   echo "Pintがコードを修正しました。"
@@ -26,10 +41,10 @@ fi
 
 echo "フォーマット: OK"
 
-# PHPStan静的解析
+# PHPStan静的解析（差分ファイルのみ）
 echo ""
 echo "PHPStan: 静的解析を実行中..."
-docker compose exec -T web composer analyse
+echo "$DIFF_FILES" | xargs docker compose exec -T web ./vendor/bin/phpstan analyse --memory-limit=512M
 
 PHPSTAN_EXIT=$?
 

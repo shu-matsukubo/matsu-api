@@ -1,0 +1,26 @@
+#!/bin/sh
+
+# ステージ済みPHPファイルを取得
+STAGED_PHP_FILES=$(git diff --cached --name-only --diff-filter=ACMR -- '*.php' | sed 's|src/www/||g')
+
+if [ -z "$STAGED_PHP_FILES" ]; then
+  exit 0
+fi
+
+echo "Pint: ステージ済みファイルにフォーマットを適用します..."
+
+# コンテナ内でpintを実行（ファイルパスを渡す）
+echo "$STAGED_PHP_FILES" | xargs -r docker compose exec -T web ./vendor/bin/pint
+
+PINT_EXIT=$?
+
+if [ $PINT_EXIT -ne 0 ]; then
+  echo "Pintの実行に失敗しました。コンテナが起動しているか確認してください。"
+  exit 1
+fi
+
+# 修正されたファイルを再ステージ
+echo "$STAGED_PHP_FILES" | xargs -r git add
+
+echo "フォーマット: OK"
+exit 0

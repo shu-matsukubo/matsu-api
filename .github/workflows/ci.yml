@@ -49,6 +49,11 @@ jobs:
         env:
           DB_HOST: 127.0.0.1
 
+      - name: シーディング実行
+        run: php artisan db:seed
+        env:
+          DB_HOST: 127.0.0.1
+
       - name: pint（コードスタイル）
         run: composer pint:test
 
@@ -60,4 +65,3 @@ jobs:
         run: composer test
         env:
           DB_HOST: 127.0.0.1
-        continue-on-error: true

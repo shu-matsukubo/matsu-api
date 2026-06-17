@@ -6,9 +6,9 @@ echo "フォーマットチェック & 静的解析を実行します..."
 while read local_ref local_sha remote_ref remote_sha; do
   if [ "$remote_sha" = "0000000000000000000000000000000000000000" ]; then
     # 新規ブランチの場合はHEADとの差分
-    DIFF_FILES=$(git diff --name-only --diff-filter=ACMRT HEAD -- '*.php')
+    DIFF_FILES=$(git diff --name-only --diff-filter=ACMRT HEAD -- '*.php' | sed 's#^src/www/##')
   else
-    DIFF_FILES=$(git diff --name-only --diff-filter=ACMRT "$remote_sha" "$local_sha" -- '*.php')
+    DIFF_FILES=$(git diff --name-only --diff-filter=ACMRT "$remote_sha" "$local_sha" -- '*.php' | sed 's#^src/www/##')
   fi
 done
 

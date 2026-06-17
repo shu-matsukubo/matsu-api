@@ -20,7 +20,7 @@ if [ $PINT_EXIT -ne 0 ]; then
 fi
 
 # 修正されたファイルを再ステージ
-echo "$STAGED_PHP_FILES" | xargs git add
+echo "$STAGED_PHP_FILES" | xargs -r git add
 
 echo "フォーマット: OK"
 exit 0

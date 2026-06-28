@@ -6,7 +6,10 @@ use App\Http\Resources\BaseResource;
 
 class ExpenseResource extends BaseResource
 {
-    public function toArray($request)
+    /**
+     * @return array<string, mixed>
+     */
+    public function toArray($request): array
     {
         return [
             'id' => $this->id,

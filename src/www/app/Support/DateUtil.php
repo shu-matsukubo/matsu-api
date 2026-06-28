@@ -88,6 +88,9 @@ class DateUtil
         return $month->startOfMonth()->setDay(min($day, $month->endOfMonth()->day));
     }
 
+    /**
+     * @return array{start: CarbonImmutable, end: CarbonImmutable}
+     */
     public static function monthRange(CarbonImmutable $date): array
     {
         return [
@@ -96,6 +99,9 @@ class DateUtil
         ];
     }
 
+    /**
+     * @return array{start: CarbonImmutable, end: CarbonImmutable}
+     */
     public static function resolveDateRange(?string $startDate, ?string $endDate): array
     {
         if ($startDate) {

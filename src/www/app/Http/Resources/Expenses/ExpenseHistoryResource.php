@@ -7,6 +7,9 @@ use App\Support\DateUtil;
 
 class ExpenseHistoryResource extends BaseResource
 {
+    /**
+     * @return array<string, mixed>
+     */
     public function toArray($request): array
     {
         return [

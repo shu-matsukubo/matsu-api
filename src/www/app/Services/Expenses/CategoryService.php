@@ -6,9 +6,11 @@ use App\Models\Expenses\ExpenseCategory;
 
 class CategoryService
 {
-    /*
-    * カテゴリ一覧を取得
-    */
+    /**
+     * カテゴリ一覧を取得
+     *
+     * @return \Illuminate\Support\Collection<int, ExpenseCategory>
+     */
     public function list()
     {
         return ExpenseCategory::where('is_active', true)
@@ -16,12 +18,18 @@ class CategoryService
             ->get();
     }
 
-    /*
-    * カテゴリを作成
-    */
+    /**
+     * カテゴリを作成
+     *
+     * @param array<string, mixed> $data
+     * @return ExpenseCategory
+     */
     public function create(array $data)
     {
-        return ExpenseCategory::create($data);
+        /** @var ExpenseCategory $category */
+        $category = ExpenseCategory::create($data);
+
+        return $category;
     }
 
     /*

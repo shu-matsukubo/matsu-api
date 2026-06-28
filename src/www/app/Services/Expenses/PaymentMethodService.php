@@ -6,9 +6,11 @@ use App\Models\Expenses\ExpensePaymentMethod;
 
 class PaymentMethodService
 {
-    /*
-    * 支払方法一覧を取得
-    */
+    /**
+     * 支払方法一覧を取得
+     *
+     * @return \Illuminate\Support\Collection<int, ExpensePaymentMethod>
+     */
     public function list()
     {
         return ExpensePaymentMethod::where('is_active', true)
@@ -16,12 +18,18 @@ class PaymentMethodService
             ->get();
     }
 
-    /*
-    * 支払方法を作成
-    */
+    /**
+     * 支払方法を作成
+     *
+     * @param array<string, mixed> $data
+     * @return ExpensePaymentMethod
+     */
     public function create(array $data)
     {
-        return ExpensePaymentMethod::create($data);
+        /** @var ExpensePaymentMethod $paymentMethod */
+        $paymentMethod = ExpensePaymentMethod::create($data);
+
+        return $paymentMethod;
     }
 
     /*

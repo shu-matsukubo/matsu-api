@@ -22,6 +22,8 @@ class ExpenseService
 
     /**
      * モードに応じて支出データを取得
+     *
+     * @param array<string, mixed> $params
      */
     public function getExpensesByMode(string $mode, array $params): AnonymousResourceCollection
     {
@@ -34,6 +36,8 @@ class ExpenseService
 
     /**
      * カテゴリごとの集計データを取得
+     *
+     * @param array<string, mixed> $params
      */
     private function getSummary(array $params): AnonymousResourceCollection
     {
@@ -65,6 +69,8 @@ class ExpenseService
 
     /**
      * 支出履歴を取得
+     *
+     * @param array<string, mixed> $params
      */
     private function getHistory(array $params): AnonymousResourceCollection
     {
@@ -83,6 +89,8 @@ class ExpenseService
 
     /**
      * 支出を作成
+     *
+     * @param array<string, mixed> $data
      */
     public function create(array $data): Expense
     {
@@ -100,6 +108,11 @@ class ExpenseService
         return $expense->delete();
     }
 
+    /**
+     * @param Collection<int, ExpenseRecurringAdjustment> $adjustments
+     * @param array<string, \Carbon\CarbonImmutable> $range
+     * @return Collection<int, mixed>
+     */
     private function buildFixedCosts(Collection $adjustments, array $range): Collection
     {
         return $adjustments
@@ -111,6 +124,10 @@ class ExpenseService
             ->values();
     }
 
+    /**
+     * @param array<string, \Carbon\CarbonImmutable> $range
+     * @return Collection<int, mixed>
+     */
     private function fixedCostOccurrences(ExpenseRecurringAdjustment $adjustment, array $range): Collection
     {
         $activeStart = DateUtil::parseDateValue($adjustment->start_date, 'start_date');

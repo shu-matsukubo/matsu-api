@@ -38,9 +38,12 @@ class Expense extends BaseModel
         return $this->belongsTo(ExpenseCategory::class);
     }
 
-    /*
-    * レポート対象に含めるもののみ取得するスコープ
-    */
+    /**
+     * レポート対象に含めるもののみ取得するスコープ
+     *
+     * @param Builder<Expense> $query
+     * @return Builder<Expense>
+     */
     public function scopeIncludedInReport(Builder $query, ReportType $type): Builder
     {
         return $query

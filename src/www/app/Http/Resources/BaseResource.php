@@ -6,7 +6,10 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class BaseResource extends JsonResource
 {
-    public function with($request)
+    /**
+     * @return array<string, mixed>
+     */
+    public function with($request): array
     {
         return [
             'success' => true,

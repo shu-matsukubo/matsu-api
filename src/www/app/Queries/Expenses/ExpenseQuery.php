@@ -13,6 +13,10 @@ use Illuminate\Support\Facades\DB;
 
 class ExpenseQuery
 {
+    /**
+     * @param array<string, \Carbon\CarbonImmutable> $range
+     * @return Collection<int, mixed>
+     */
     public function aggregate(array $range, ExpenseGroupBy $groupBy): Collection
     {
         if ($groupBy === ExpenseGroupBy::DATE) {
@@ -49,6 +53,10 @@ class ExpenseQuery
             ->get();
     }
 
+    /**
+     * @param array<string, \Carbon\CarbonImmutable> $range
+     * @return Collection<int, mixed>
+     */
     public function aggregateByDate(array $range): Collection
     {
         return Expense::query()
@@ -66,6 +74,11 @@ class ExpenseQuery
             ->get();
     }
 
+    /**
+     * @param Collection<int, mixed> $result
+     * @param array<string, \Carbon\CarbonImmutable> $range
+     * @return Collection<int, mixed>
+     */
     public function recurring(Collection $result, ExpenseGroupBy $groupBy, array $range): Collection
     {
         $key = $groupBy->recurringKey();
@@ -94,6 +107,9 @@ class ExpenseQuery
         });
     }
 
+    /**
+     * @param array<string, \Carbon\CarbonImmutable> $range
+     */
     public function totalNetAmount(array $range): int
     {
         return Expense::query()
@@ -105,6 +121,10 @@ class ExpenseQuery
             ->net_amount ?? 0;
     }
 
+    /**
+     * @param array<string, \Carbon\CarbonImmutable> $range
+     * @return Collection<int, ExpenseRecurringAdjustment>
+     */
     public function fixedCostAdjustments(array $range): Collection
     {
         return ExpenseRecurringAdjustment::query()
@@ -119,6 +139,10 @@ class ExpenseQuery
             ->get();
     }
 
+    /**
+     * @param array<string, \Carbon\CarbonImmutable> $range
+     * @return Collection<int, Expense>
+     */
     public function history(array $range, ?string $categoryId = null): Collection
     {
         return Expense::query()
@@ -129,6 +153,9 @@ class ExpenseQuery
             ->get();
     }
 
+    /**
+     * @param array<string, \Carbon\CarbonImmutable> $range
+     */
     private function countRecurringOccurrences(ExpenseRecurringAdjustment $adjustment, array $range): int
     {
         $activeStart = CarbonImmutable::parse($adjustment->start_date);

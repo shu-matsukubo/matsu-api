@@ -84,9 +84,12 @@ class ExpenseService
     /**
      * 支出を作成
      */
-    public function create(array $data)
+    public function create(array $data): Expense
     {
-        return Expense::create($data);
+        /** @var Expense $expense */
+        $expense = Expense::create($data);
+
+        return $expense;
     }
 
     /**

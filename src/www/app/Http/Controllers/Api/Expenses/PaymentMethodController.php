@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\BaseApiController;
 use App\Http\Resources\Expenses\PaymentMethodResource;
 use App\Services\Expenses\PaymentMethodService;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class PaymentMethodController extends BaseApiController
 {
@@ -22,7 +23,7 @@ class PaymentMethodController extends BaseApiController
     /*
     * GET用ルート
     */
-    public function index()
+    public function index(): AnonymousResourceCollection
     {
         // 一覧を取得
         $categories = $this->paymentMethodService->list();
@@ -33,7 +34,7 @@ class PaymentMethodController extends BaseApiController
     /*
     * GET用ルート（特定のID検索）
     */
-    public function show($id)
+    public function show(int|string $id): void
     {
         // 将来のために念のため残しておく
     }
@@ -41,7 +42,7 @@ class PaymentMethodController extends BaseApiController
     /*
     * POST用ルート
     */
-    public function store(Request $request)
+    public function store(Request $request): void
     {
         // 将来のために念のため残しておく
     }
@@ -49,7 +50,7 @@ class PaymentMethodController extends BaseApiController
     /*
     * PUT/UPDATE用ルート
     */
-    public function update(Request $request, $id)
+    public function update(Request $request, int|string $id): void
     {
         // 将来のために念のため残しておく
     }
@@ -57,7 +58,7 @@ class PaymentMethodController extends BaseApiController
     /*
     * DELETE用ルート
     */
-    public function destroy($id)
+    public function destroy(int|string $id): void
     {
         // 将来のために念のため残しておく
     }

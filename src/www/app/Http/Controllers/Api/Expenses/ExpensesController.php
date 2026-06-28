@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Expenses;
 use App\Http\Controllers\Api\BaseApiController;
 use App\Models\Expenses\Expense;
 use App\Services\Expenses\ExpenseService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
@@ -33,7 +34,7 @@ class ExpensesController extends BaseApiController
     /*
     * GET用ルート（特定のID検索）
     */
-    public function show($id)
+    public function show(int|string $id): void
     {
         //
     }
@@ -41,7 +42,7 @@ class ExpensesController extends BaseApiController
     /*
     * POST用ルート
     */
-    public function store(Request $request)
+    public function store(Request $request): Expense
     {
         return $this->expenseService->create($request->all());
     }
@@ -49,7 +50,7 @@ class ExpensesController extends BaseApiController
     /*
     * PUT/UPDATE用ルート
     */
-    public function update(Request $request, $id)
+    public function update(Request $request, int|string $id): void
     {
         //
     }
@@ -57,7 +58,7 @@ class ExpensesController extends BaseApiController
     /*
     * DELETE用ルート
     */
-    public function destroy(Expense $expense)
+    public function destroy(Expense $expense): JsonResponse
     {
         $this->expenseService->delete($expense);
 

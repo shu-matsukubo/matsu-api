@@ -21,7 +21,15 @@ class DateUtil
 
     public static function parseMonth(string $month): CarbonImmutable
     {
-        return CarbonImmutable::createFromFormat('Y-m', $month, self::TZ);
+        $parsed = CarbonImmutable::createFromFormat('!Y-m', $month, self::TZ);
+
+        if (! $parsed || $parsed->format('Y-m') !== $month) {
+            throw ValidationException::withMessages([
+                'month' => 'The month must be a valid date in Y-m format.',
+            ]);
+        }
+
+        return $parsed;
     }
 
     public static function parseDate(string $date, string $field): CarbonImmutable
@@ -43,7 +51,13 @@ class DateUtil
             return $date->startOfDay();
         }
 
-        return self::parseDate((string) $date, $field);
+        if (is_string($date) || is_numeric($date)) {
+            return self::parseDate((string) $date, $field);
+        }
+
+        throw ValidationException::withMessages([
+            $field => 'The '.$field.' must be a valid date string.',
+        ]);
     }
 
     public static function resolveMonth(?string $month): CarbonImmutable
@@ -88,6 +102,9 @@ class DateUtil
         return $month->startOfMonth()->setDay(min($day, $month->endOfMonth()->day));
     }
 
+    /**
+     * @return array{start: CarbonImmutable, end: CarbonImmutable}
+     */
     public static function monthRange(CarbonImmutable $date): array
     {
         return [
@@ -96,8 +113,14 @@ class DateUtil
         ];
     }
 
+    /**
+     * @return array{start: CarbonImmutable, end: CarbonImmutable}
+     */
     public static function resolveDateRange(?string $startDate, ?string $endDate): array
     {
+        $start = null;
+        $end = null;
+
         if ($startDate) {
             $start = self::parseDate($startDate, 'start_date');
         }
@@ -106,19 +129,23 @@ class DateUtil
             $end = self::parseDate($endDate, 'end_date');
         }
 
-        if (! isset($start) && ! isset($end)) {
+        if (! $start && ! $end) {
             $range = self::monthRange(self::now());
-        } elseif (! isset($start)) {
+        } elseif (! $start) {
+            /** @var CarbonImmutable $end */
             $range = [
                 'start' => self::startOfMonth($end),
                 'end' => $end,
             ];
-        } elseif (! isset($end)) {
+        } elseif (! $end) {
+            /** @var CarbonImmutable $start */
             $range = [
                 'start' => $start,
                 'end' => self::endOfMonth($start),
             ];
         } else {
+            /** @var CarbonImmutable $start */
+            /** @var CarbonImmutable $end */
             $range = [
                 'start' => $start,
                 'end' => $end,

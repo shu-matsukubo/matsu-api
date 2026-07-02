@@ -3,32 +3,54 @@
 namespace App\Services\Expenses;
 
 use App\Models\Expenses\ExpenseCategory;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Validation\ValidationException;
 
 class CategoryService
 {
-    /*
-    * カテゴリ一覧を取得
-    */
-    public function list()
+    /**
+     * カテゴリ一覧を取得
+     *
+     * @return Collection<int, ExpenseCategory>
+     */
+    public function list(): Collection
     {
         return ExpenseCategory::where('is_active', true)
             ->orderBy('sort_order')
             ->get();
     }
 
-    /*
-    * カテゴリを作成
-    */
-    public function create(array $data)
+    /**
+     * カテゴリを作成
+     *
+     * @param  array<string, mixed>  $data
+     *
+     * @throws ValidationException
+     */
+    public function create(array $data): ExpenseCategory
     {
-        return ExpenseCategory::create($data);
+        $validated = validator($data, [
+            'name' => 'required|string|max:255',
+            'sort_order' => 'required|integer|min:0',
+            'is_active' => 'required|boolean',
+        ])->validate();
+
+        return ExpenseCategory::create($validated);
     }
 
-    /*
-    * カテゴリを削除
-    */
-    public function delete(int $id)
+    /**
+     * カテゴリを削除
+     *
+     *
+     * @throws \Exception
+     */
+    public function delete(int $id): bool
     {
-        return ExpenseCategory::findOrFail($id)->delete();
+        $deleted = ExpenseCategory::findOrFail($id)->delete();
+        if ($deleted === false) {
+            throw new \Exception("Failed to delete category with ID: $id");
+        }
+
+        return true;
     }
 }

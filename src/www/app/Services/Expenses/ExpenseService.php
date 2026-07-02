@@ -22,6 +22,8 @@ class ExpenseService
 
     /**
      * モードに応じて支出データを取得
+     *
+     * @param  array<string, mixed>  $params
      */
     public function getExpensesByMode(string $mode, array $params): AnonymousResourceCollection
     {
@@ -34,15 +36,21 @@ class ExpenseService
 
     /**
      * カテゴリごとの集計データを取得
+     *
+     * @param  array<string, mixed>  $params
      */
     private function getSummary(array $params): AnonymousResourceCollection
     {
-        $range = DateUtil::resolveDateRange(
-            $params['start_date'] ?? null,
-            $params['end_date'] ?? null
-        );
+        /** @var string|null $startDate */
+        $startDate = isset($params['start_date']) && is_string($params['start_date']) ? $params['start_date'] : null;
+        /** @var string|null $endDate */
+        $endDate = isset($params['end_date']) && is_string($params['end_date']) ? $params['end_date'] : null;
 
-        $groupBy = ExpenseGroupBy::from($params['group_by'] ?? null);
+        $range = DateUtil::resolveDateRange($startDate, $endDate);
+
+        /** @var string|null $groupByValue */
+        $groupByValue = isset($params['group_by']) && is_string($params['group_by']) ? $params['group_by'] : null;
+        $groupBy = ExpenseGroupBy::fromRequest($groupByValue);
 
         $result = $this->query->aggregate($range, $groupBy);
 
@@ -50,14 +58,16 @@ class ExpenseService
             $result = $this->query->recurring($result, $groupBy, $range);
         }
 
-        $expenseTotal = $this->query->totalNetAmount($range);
+        $expenseTotal = (int) $this->query->totalNetAmount($range);
         $fixedCosts = $this->buildFixedCosts($this->query->fixedCostAdjustments($range), $range);
-        $fixedCostTotal = $fixedCosts->sum('amount');
+        $sum = $fixedCosts->sum(fn (array $item) => $item['amount']);
+        /** @var int $fixedCostTotal */
+        $fixedCostTotal = is_numeric($sum) ? (int) $sum : 0;
 
         return SummaryResource::collection($result)->additional([
             'meta' => [
-                'total_net_amount' => (int) ($expenseTotal + $fixedCostTotal),
-                'fixed_cost_net_amount' => (int) ($fixedCostTotal),
+                'total_net_amount' => $expenseTotal + $fixedCostTotal,
+                'fixed_cost_net_amount' => $fixedCostTotal,
                 'fixed_costs' => $fixedCosts,
             ],
         ]);
@@ -65,17 +75,24 @@ class ExpenseService
 
     /**
      * 支出履歴を取得
+     *
+     * @param  array<string, mixed>  $params
      */
     private function getHistory(array $params): AnonymousResourceCollection
     {
-        $range = DateUtil::resolveDateRange(
-            $params['start_date'] ?? null,
-            $params['end_date'] ?? null
-        );
+        /** @var string|null $startDate */
+        $startDate = isset($params['start_date']) && is_string($params['start_date']) ? $params['start_date'] : null;
+        /** @var string|null $endDate */
+        $endDate = isset($params['end_date']) && is_string($params['end_date']) ? $params['end_date'] : null;
+
+        $range = DateUtil::resolveDateRange($startDate, $endDate);
+
+        /** @var string|null $categoryId */
+        $categoryId = isset($params['category_id']) && is_string($params['category_id']) ? $params['category_id'] : null;
 
         $result = $this->query->history(
             $range,
-            $params['category_id'] ?? null
+            $categoryId
         );
 
         return ExpenseHistoryResource::collection($result);
@@ -83,20 +100,30 @@ class ExpenseService
 
     /**
      * 支出を作成
+     *
+     * @param  array<string, mixed>  $data
      */
-    public function create(array $data)
+    public function create(array $data): Expense
     {
-        return Expense::create($data);
+        /** @var Expense $expense */
+        $expense = Expense::create($data);
+
+        return $expense;
     }
 
     /**
      * 支出を削除
      */
-    public function delete(Expense $expense)
+    public function delete(Expense $expense): ?bool
     {
         return $expense->delete();
     }
 
+    /**
+     * @param  Collection<int, ExpenseRecurringAdjustment>  $adjustments
+     * @param  array{start: CarbonImmutable, end: CarbonImmutable}  $range
+     * @return Collection<int, array<string, mixed>>
+     */
     private function buildFixedCosts(Collection $adjustments, array $range): Collection
     {
         return $adjustments
@@ -108,8 +135,14 @@ class ExpenseService
             ->values();
     }
 
+    /**
+     * @param  array{start: CarbonImmutable, end: CarbonImmutable}  $range
+     * @return Collection<int, array<string, mixed>>
+     */
     private function fixedCostOccurrences(ExpenseRecurringAdjustment $adjustment, array $range): Collection
     {
+        /** @var Collection<int, array<string, mixed>> $items */
+        $items = collect();
         $activeStart = DateUtil::parseDateValue($adjustment->start_date, 'start_date');
         $activeEnd = $adjustment->end_date
             ? DateUtil::parseDateValue($adjustment->end_date, 'end_date')
@@ -117,7 +150,6 @@ class ExpenseService
         $intervalMonths = max(1, (int) $adjustment->interval_months);
         $paymentDay = $this->resolvePaymentDay($adjustment, $activeStart);
 
-        $items = collect();
         $cursor = $range['start']->startOfMonth();
         $lastMonth = $range['end']->startOfMonth();
         $startMonth = $activeStart->startOfMonth();

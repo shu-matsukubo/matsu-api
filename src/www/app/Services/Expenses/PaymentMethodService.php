@@ -4,6 +4,7 @@ namespace App\Services\Expenses;
 
 use App\Models\Expenses\ExpensePaymentMethod;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Validation\ValidationException;
 
 class PaymentMethodService
 {
@@ -23,10 +24,18 @@ class PaymentMethodService
      * 支払方法を作成
      *
      * @param  array<string, mixed>  $data
+     *
+     * @throws ValidationException
      */
     public function create(array $data): ExpensePaymentMethod
     {
-        return ExpensePaymentMethod::create($data);
+        $validated = validator($data, [
+            'name' => 'required|string|max:255',
+            'sort_order' => 'required|integer|min:0',
+            'is_active' => 'required|boolean',
+        ])->validate();
+
+        return ExpensePaymentMethod::create($validated);
     }
 
     /**
@@ -34,6 +43,11 @@ class PaymentMethodService
      */
     public function delete(int $id): bool
     {
-        return (bool) ExpensePaymentMethod::findOrFail($id)->delete();
+        $deleted = ExpensePaymentMethod::findOrFail($id)->delete();
+        if ($deleted === false) {
+            throw new \Exception("Failed to delete payment method with ID: $id");
+        }
+
+        return true;
     }
 }

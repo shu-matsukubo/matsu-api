@@ -4,6 +4,7 @@ namespace App\Services\Expenses;
 
 use App\Models\Expenses\ExpenseCategory;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Validation\ValidationException;
 
 class CategoryService
 {
@@ -23,9 +24,8 @@ class CategoryService
      * カテゴリを作成
      *
      * @param  array<string, mixed>  $data
-     * @return ExpenseCategory
      *
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
      */
     public function create(array $data): ExpenseCategory
     {
@@ -41,7 +41,6 @@ class CategoryService
     /**
      * カテゴリを削除
      *
-     * @return bool
      *
      * @throws \Exception
      */
@@ -51,6 +50,7 @@ class CategoryService
         if ($deleted === false) {
             throw new \Exception("Failed to delete category with ID: $id");
         }
+
         return true;
     }
 }

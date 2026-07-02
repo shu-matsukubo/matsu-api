@@ -40,6 +40,7 @@ class DateUtil
                 $field => "The $field must be a valid date in $format format.",
             ]);
         }
+
         return $parsed;
     }
 

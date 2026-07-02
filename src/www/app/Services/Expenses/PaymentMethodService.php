@@ -4,6 +4,7 @@ namespace App\Services\Expenses;
 
 use App\Models\Expenses\ExpensePaymentMethod;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Validation\ValidationException;
 
 class PaymentMethodService
 {
@@ -24,7 +25,7 @@ class PaymentMethodService
      *
      * @param  array<string, mixed>  $data
      *
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
      */
     public function create(array $data): ExpensePaymentMethod
     {
@@ -46,6 +47,7 @@ class PaymentMethodService
         if ($deleted === false) {
             throw new \Exception("Failed to delete payment method with ID: $id");
         }
+
         return true;
     }
 }

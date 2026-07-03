@@ -5,6 +5,7 @@ namespace App\Enums\Expenses;
 use App\Models\Expenses\Expense;
 use App\Models\Expenses\ExpenseCategory;
 use App\Models\Expenses\ExpensePaymentMethod;
+use Illuminate\Database\Eloquent\Model;
 
 enum ExpenseGroupBy: string
 {
@@ -17,6 +18,9 @@ enum ExpenseGroupBy: string
         return self::tryFrom($value ?? '') ?? self::CATEGORY;
     }
 
+    /**
+     * @return class-string<Model>
+     */
     public function model(): string
     {
         return match ($this) {

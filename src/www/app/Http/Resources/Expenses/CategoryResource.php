@@ -5,6 +5,9 @@ namespace App\Http\Resources\Expenses;
 use App\Http\Resources\BaseResource;
 use Illuminate\Http\Request;
 
+/**
+ * @mixin \App\Models\Expenses\ExpenseCategory
+ */
 class CategoryResource extends BaseResource
 {
     /**

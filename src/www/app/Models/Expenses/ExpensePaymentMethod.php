@@ -6,6 +6,7 @@ use App\Enums\ActiveStatus;
 use App\Models\BaseModel;
 use App\Models\Traits\HasActiveScope;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
     'name',
@@ -23,10 +24,12 @@ class ExpensePaymentMethod extends BaseModel
         ]);
     }
 
-    /*
-    * 支払い履歴とのリレーション
-    */
-    public function expenses()
+    /**
+     * 支払い履歴とのリレーション
+     *
+     * @return HasMany<Expense, $this>
+     */
+    public function expenses(): HasMany
     {
         return $this->hasMany(Expense::class);
     }

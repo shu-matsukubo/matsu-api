@@ -49,8 +49,8 @@ class Expense extends BaseModel
     /**
      * レポート対象に含めるもののみ取得するスコープ
      *
-     * @param  Builder<self>  $query
-     * @return Builder<self>
+     * @param  Builder<$this>  $query
+     * @return Builder<$this>
      */
     public function scopeIncludedInReport(Builder $query, ReportType $type): Builder
     {

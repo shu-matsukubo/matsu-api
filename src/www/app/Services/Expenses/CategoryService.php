@@ -2,9 +2,9 @@
 
 namespace App\Services\Expenses;
 
+use App\Enums\ActiveStatus;
 use App\Models\Expenses\ExpenseCategory;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Validation\ValidationException;
 
 class CategoryService
 {
@@ -15,7 +15,7 @@ class CategoryService
      */
     public function list(): Collection
     {
-        return ExpenseCategory::where('is_active', true)
+        return ExpenseCategory::where('is_active', ActiveStatus::ACTIVE)
             ->orderBy('sort_order')
             ->get();
     }
@@ -24,8 +24,6 @@ class CategoryService
      * カテゴリを作成
      *
      * @param  array<string, mixed>  $data
-     *
-     * @throws ValidationException
      */
     public function create(array $data): ExpenseCategory
     {
@@ -40,17 +38,9 @@ class CategoryService
 
     /**
      * カテゴリを削除
-     *
-     *
-     * @throws \Exception
      */
     public function delete(int $id): bool
     {
-        $deleted = ExpenseCategory::findOrFail($id)->delete();
-        if ($deleted === false) {
-            throw new \Exception("Failed to delete category with ID: $id");
-        }
-
-        return true;
+        return (bool) ExpenseCategory::findOrFail($id)->delete();
     }
 }

@@ -5,6 +5,7 @@ namespace App\Models\Expenses;
 use App\Enums\Expenses\ReportType;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 #[Fillable([
     'category_id',
@@ -20,10 +21,12 @@ class ExpenseCategoryReportRule extends BaseModel
         ]);
     }
 
-    /*
-    * カテゴリテーブルのリレーション
-    */
-    public function category()
+    /**
+     * カテゴリテーブルのリレーション
+     *
+     * @return BelongsTo<ExpenseCategory, $this>
+     */
+    public function category(): BelongsTo
     {
         return $this->belongsTo(ExpenseCategory::class, 'category_id');
     }

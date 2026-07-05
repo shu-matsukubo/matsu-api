@@ -3,10 +3,18 @@
 namespace App\Http\Resources\Expenses;
 
 use App\Http\Resources\BaseResource;
+use App\Models\Expenses\Expense;
+use Illuminate\Http\Request;
 
+/**
+ * @mixin Expense
+ */
 class ExpenseResource extends BaseResource
 {
-    public function toArray($request)
+    /**
+     * @return array<string, mixed>
+     */
+    public function toArray(Request $request): array
     {
         return [
             'id' => $this->id,

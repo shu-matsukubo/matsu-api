@@ -6,7 +6,9 @@ use App\Enums\Expenses\ReportType;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Query\JoinClause;
 
 #[Fillable([
     'amount',
@@ -28,29 +30,39 @@ class Expense extends BaseModel
         ]);
     }
 
-    public function paymentMethod()
+    /**
+     * @return BelongsTo<ExpensePaymentMethod, $this>
+     */
+    public function paymentMethod(): BelongsTo
     {
         return $this->belongsTo(ExpensePaymentMethod::class);
     }
 
-    public function category()
+    /**
+     * @return BelongsTo<ExpenseCategory, $this>
+     */
+    public function category(): BelongsTo
     {
         return $this->belongsTo(ExpenseCategory::class);
     }
 
-    /*
-    * レポート対象に含めるもののみ取得するスコープ
-    */
+    /**
+     * レポート対象に含めるもののみ取得するスコープ
+     *
+     * @param  Builder<$this>  $query
+     * @return Builder<$this>
+     */
     public function scopeIncludedInReport(Builder $query, ReportType $type): Builder
     {
         return $query
             ->join('expense_categories', 'expenses.category_id', '=', 'expense_categories.id')
-            ->leftJoin('expense_category_report_rules as rules', function ($join) use ($type) {
+            ->leftJoin('expense_category_report_rules as rules', function (JoinClause $join) use ($type) {
                 $join->on('rules.category_id', '=', 'expense_categories.id')
                     ->where('rules.report_type', $type->value);
             })
-            ->where(function ($q) {
+            ->where(function (Builder $q) {
                 $q->whereNull('rules.is_included')
+                    /** @phpstan-ignore argument.type */
                     ->orWhere('rules.is_included', true);
             });
     }

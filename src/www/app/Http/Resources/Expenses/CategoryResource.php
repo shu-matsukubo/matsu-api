@@ -3,8 +3,12 @@
 namespace App\Http\Resources\Expenses;
 
 use App\Http\Resources\BaseResource;
+use App\Models\Expenses\ExpenseCategory;
 use Illuminate\Http\Request;
 
+/**
+ * @mixin ExpenseCategory
+ */
 class CategoryResource extends BaseResource
 {
     /**

@@ -8,8 +8,8 @@ use Illuminate\Database\Eloquent\Builder;
 trait HasActiveScope
 {
     /**
-     * @param  Builder<static>  $query
-     * @return Builder<static>
+     * @param  Builder<$this>  $query
+     * @return Builder<$this>
      */
     public function scopeActive(Builder $query): Builder
     {

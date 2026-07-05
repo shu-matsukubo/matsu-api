@@ -3,9 +3,21 @@
 namespace App\Http\Resources\Expenses;
 
 use App\Support\DateUtil;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * @property int|null $net_amount
+ * @property int|null $total_amount
+ * @property int|null $total_point
+ * @property int|null $transaction_count
+ * @property int|null $category_id
+ * @property int|null $payment_method_id
+ * @property int|null $initial_balance
+ * @property string|null $name
+ * @property CarbonImmutable|null $date
+ */
 class SummaryResource extends JsonResource
 {
     /**
@@ -35,7 +47,9 @@ class SummaryResource extends JsonResource
             $res['initial_balance'] = $this->initial_balance ?? 0;
             $res['remaining_balance'] = ($res['initial_balance'] - $netAmount);
         } elseif (isset($this->date)) {
-            $res['date'] = DateUtil::toDateString($this->date);
+            /** @var CarbonImmutable $date */
+            $date = $this->date;
+            $res['date'] = DateUtil::toDateString($date);
         }
 
         return $res;

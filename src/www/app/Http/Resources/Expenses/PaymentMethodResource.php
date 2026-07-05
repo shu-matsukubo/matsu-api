@@ -3,8 +3,12 @@
 namespace App\Http\Resources\Expenses;
 
 use App\Http\Resources\BaseResource;
+use App\Models\Expenses\ExpensePaymentMethod;
 use Illuminate\Http\Request;
 
+/**
+ * @mixin ExpensePaymentMethod
+ */
 class PaymentMethodResource extends BaseResource
 {
     /**

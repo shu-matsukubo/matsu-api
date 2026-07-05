@@ -27,7 +27,13 @@ class CategoryService
      */
     public function create(array $data): ExpenseCategory
     {
-        return ExpenseCategory::create($data);
+        $validated = validator($data, [
+            'name' => 'required|string|max:255',
+            'sort_order' => 'required|integer|min:0',
+            'is_active' => 'required|boolean',
+        ])->validate();
+
+        return ExpenseCategory::create($validated);
     }
 
     /**

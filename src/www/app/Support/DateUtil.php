@@ -23,22 +23,21 @@ class DateUtil
     {
         $parsed = CarbonImmutable::createFromFormat('!Y-m', $month, self::TZ);
 
-        if (! $parsed || $parsed->format('Y-m') !== $month) {
-            throw ValidationException::withMessages([
-                'month' => 'The month must be a valid date in Y-m format.',
-            ]);
-        }
-
-        return $parsed;
+        return self::validateParsedDate($parsed, $month, 'month', 'Y-m');
     }
 
     public static function parseDate(string $date, string $field): CarbonImmutable
     {
         $parsed = CarbonImmutable::createFromFormat('!Y-m-d', $date, self::TZ);
 
-        if (! $parsed || $parsed->format('Y-m-d') !== $date) {
+        return self::validateParsedDate($parsed, $date, $field, 'Y-m-d');
+    }
+
+    private static function validateParsedDate(mixed $parsed, string $original, string $field, string $format): CarbonImmutable
+    {
+        if (! ($parsed instanceof CarbonImmutable) || $parsed->format($format) !== $original) {
             throw ValidationException::withMessages([
-                $field => 'The '.$field.' must be a valid date in Y-m-d format.',
+                $field => "The $field must be a valid date in $format format.",
             ]);
         }
 
@@ -132,20 +131,23 @@ class DateUtil
         if (! $start && ! $end) {
             $range = self::monthRange(self::now());
         } elseif (! $start) {
-            /** @var CarbonImmutable $end */
+            // $end is guaranteed to be non-null here as $start is null and (! $start && ! $end) is false
+            $end = self::parseDate((string) $endDate, 'end_date');
             $range = [
                 'start' => self::startOfMonth($end),
                 'end' => $end,
             ];
         } elseif (! $end) {
-            /** @var CarbonImmutable $start */
+            // $start is guaranteed to be non-null here as $end is null and the above conditions are false
+            $start = self::parseDate((string) $startDate, 'start_date');
             $range = [
                 'start' => $start,
                 'end' => self::endOfMonth($start),
             ];
         } else {
-            /** @var CarbonImmutable $start */
-            /** @var CarbonImmutable $end */
+            // Both $start and $end are non-null here
+            $start = self::parseDate((string) $startDate, 'start_date');
+            $end = self::parseDate((string) $endDate, 'end_date');
             $range = [
                 'start' => $start,
                 'end' => $end,

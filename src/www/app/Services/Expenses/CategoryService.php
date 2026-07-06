@@ -33,13 +33,14 @@ class CategoryService
             'is_active' => 'required|boolean',
         ])->validate();
 
+        /** @var array<string, mixed> $validated */
         return ExpenseCategory::create($validated);
     }
 
     /**
      * カテゴリを削除
      */
-    public function delete(int $id): bool
+    public function delete(string $id): bool
     {
         return (bool) ExpenseCategory::findOrFail($id)->delete();
     }

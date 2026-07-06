@@ -114,9 +114,14 @@ class ExpenseService
     /**
      * 支出を削除
      */
-    public function delete(Expense $expense): ?bool
+    public function delete(Expense $expense): bool
     {
-        return $expense->delete();
+        $deleted = $expense->delete();
+        if ($deleted === false) {
+            throw new \Exception("Failed to delete expense with ID: {$expense->id}");
+        }
+
+        return true;
     }
 
     /**

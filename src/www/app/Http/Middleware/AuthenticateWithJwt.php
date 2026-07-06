@@ -96,6 +96,7 @@ class AuthenticateWithJwt
             throw new \RuntimeException('Invalid JSON.');
         }
 
+        /** @var array<string, mixed> $decoded */
         return $decoded;
     }
 
@@ -104,20 +105,43 @@ class AuthenticateWithJwt
      */
     private function findJwk(string $kid): array
     {
-        $cache = Cache::store((string) config('auth_server.cache_store'));
-        $jwks = $cache->remember('auth_server_jwks', (int) config('auth_server.jwks_cache_seconds'), function (): array {
+        /** @var string $cacheStore */
+        $cacheStore = config('auth_server.cache_store');
+        $cache = Cache::store($cacheStore);
+
+        /** @var int $cacheSeconds */
+        $cacheSeconds = config('auth_server.jwks_cache_seconds');
+
+        $jwks = $cache->remember('auth_server_jwks', $cacheSeconds, function (): array {
             try {
-                return Http::timeout(5)
+                /** @var string $jwksUrl */
+                $jwksUrl = config('auth_server.jwks_url');
+
+                $response = Http::timeout(5)
                     ->acceptJson()
-                    ->get((string) config('auth_server.jwks_url'))
+                    ->get($jwksUrl)
                     ->throw()
                     ->json();
+
+                if (! is_array($response)) {
+                    throw new \RuntimeException('Invalid JWKS response.');
+                }
+
+                return $response;
             } catch (RequestException $exception) {
                 throw new \RuntimeException('Failed to fetch JWKS.', 0, $exception);
             }
         });
 
-        foreach (($jwks['keys'] ?? []) as $key) {
+        /** @var array<string, mixed> $jwks */
+        $keys = $jwks['keys'] ?? [];
+
+        if (! is_iterable($keys)) {
+            throw new \RuntimeException('Invalid JWKS keys.');
+        }
+
+        foreach ($keys as $key) {
+            /** @var array<string, mixed> $key */
             if (($key['kid'] ?? null) === $kid) {
                 return $key;
             }
@@ -133,8 +157,10 @@ class AuthenticateWithJwt
     private function assertClaims(array $payload): void
     {
         $now = time();
-        $issuer = (string) config('auth_server.issuer');
-        $audience = (string) config('auth_server.audience');
+        /** @var string $issuer */
+        $issuer = config('auth_server.issuer');
+        /** @var string $audience */
+        $audience = config('auth_server.audience');
 
         if (($payload['iss'] ?? null) !== $issuer) {
             throw new \RuntimeException('Unexpected issuer.');

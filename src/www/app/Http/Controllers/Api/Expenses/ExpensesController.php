@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Expenses;
 use App\Http\Controllers\Api\BaseApiController;
 use App\Models\Expenses\Expense;
 use App\Services\Expenses\ExpenseService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
@@ -25,39 +26,45 @@ class ExpensesController extends BaseApiController
     */
     public function index(Request $request): AnonymousResourceCollection
     {
-        $mode = $request->query('mode', 'summary');
+        $mode = (string) $request->query('mode', 'summary');
 
-        return $this->expenseService->getExpensesByMode($mode, $request->all());
+        /** @var array<string, mixed> $params */
+        $params = $request->all();
+
+        return $this->expenseService->getExpensesByMode($mode, $params);
     }
 
     /*
     * GET用ルート（特定のID検索）
     */
-    public function show($id)
+    public function show(string $id): JsonResponse
     {
-        //
+        return response()->json();
     }
 
     /*
     * POST用ルート
     */
-    public function store(Request $request)
+    public function store(Request $request): Expense
     {
-        return $this->expenseService->create($request->all());
+        /** @var array<string, mixed> $data */
+        $data = $request->all();
+
+        return $this->expenseService->create($data);
     }
 
     /*
     * PUT/UPDATE用ルート
     */
-    public function update(Request $request, $id)
+    public function update(Request $request, string $id): JsonResponse
     {
-        //
+        return response()->json();
     }
 
     /*
     * DELETE用ルート
     */
-    public function destroy(Expense $expense)
+    public function destroy(Expense $expense): JsonResponse
     {
         $this->expenseService->delete($expense);
 

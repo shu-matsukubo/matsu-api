@@ -3,7 +3,8 @@ name: CI
 on:
   pull_request:
     branches:
-      - main # develop → main のPR時に発火
+      - develop
+      - main
 
 jobs:
   ci:

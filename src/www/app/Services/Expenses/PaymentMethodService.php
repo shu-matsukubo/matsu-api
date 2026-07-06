@@ -35,13 +35,14 @@ class PaymentMethodService
             'is_active' => 'required|boolean',
         ])->validate();
 
+        /** @var array<string, mixed> $validated */
         return ExpensePaymentMethod::create($validated);
     }
 
     /**
      * 支払方法を削除
      */
-    public function delete(int $id): bool
+    public function delete(string $id): bool
     {
         $deleted = ExpensePaymentMethod::findOrFail($id)->delete();
         if ($deleted === false) {

@@ -54,7 +54,7 @@ class ExpenseQuery
             ])
             ->where(function ($q) use ($table) {
                 /** @var \Illuminate\Database\Query\Builder $q */
-                $q->where($table.'.is_active', ActiveStatus::ACTIVE->value);
+                $q->where($table.'.is_active', ActiveStatus::ACTIVE);
             })
             ->groupBy([
                 "$table.id",

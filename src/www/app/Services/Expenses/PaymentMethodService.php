@@ -2,6 +2,7 @@
 
 namespace App\Services\Expenses;
 
+use App\Enums\ActiveStatus;
 use App\Models\Expenses\ExpensePaymentMethod;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Validation\ValidationException;
@@ -15,7 +16,7 @@ class PaymentMethodService
      */
     public function list(): Collection
     {
-        return ExpensePaymentMethod::where('is_active', true)
+        return ExpensePaymentMethod::where('is_active', ActiveStatus::ACTIVE)
             ->orderBy('sort_order')
             ->get();
     }
